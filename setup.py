@@ -12,7 +12,7 @@ with open("test_requirements.txt") as f_tests:
     required_for_tests = f_tests.read().splitlines()
 
 setup(
-    name="cloudshell-template",
+    name="cloudshell-shell-connectivity-flow",
     url="http://www.qualisystems.com/",
     author="QualiSystems",
     author_email="info@qualisystems.com",
@@ -23,7 +23,6 @@ setup(
         ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*, <4"
     ),
     version=version_from_file,
-    package_data={"": ["*.txt"]},
-    description="<your package description>",
+    description="QualiSystems Shells Connectivity Flow Package",
     include_package_data=True,
 )
