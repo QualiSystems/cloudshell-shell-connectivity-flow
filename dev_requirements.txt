@@ -5,4 +5,3 @@ tox-factor
 
 jsonpickle
 -e git+https://github.com/QualiSystems/cloudshell-logging.git@dev#egg=cloudshell-logging
--e git+https://github.com/QualiSystems/cloudshell-shell-flows.git@dev#egg=cloudshell-shell-flows

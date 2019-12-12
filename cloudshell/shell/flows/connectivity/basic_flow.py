@@ -5,11 +5,11 @@ from threading import Thread, current_thread
 
 import jsonpickle
 from cloudshell.logging.utils.decorators import command_logging
-from cloudshell.shell.flows.utils.json_utils import JsonRequestDeserializer
 
 from cloudshell.shell.flows.connectivity.driver_response import DriverResponse
 from cloudshell.shell.flows.connectivity.driver_response_root import DriverResponseRoot
 from cloudshell.shell.flows.connectivity.interfaces import ConnectivityFlowInterface
+from cloudshell.shell.flows.connectivity.utils import JsonRequestDeserializer
 
 
 class ConnectivityActionResult(object):
