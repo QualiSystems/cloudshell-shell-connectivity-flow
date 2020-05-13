@@ -1,7 +1,7 @@
 import sys
 from unittest import TestCase
 
-from cloudshell.shell.flows.connectivity.utils import JsonRequestDeserializer
+from cloudshell.shell.flows.connectivity.helpers.utils import JsonRequestDeserializer
 
 if sys.version_info >= (3, 0):
     from unittest import mock

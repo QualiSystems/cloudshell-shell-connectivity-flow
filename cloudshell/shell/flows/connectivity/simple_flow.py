@@ -4,10 +4,10 @@
 import logging
 
 import jsonpickle
-from cloudshell.shell.flows.connectivity.driver_request import DriverRequest
-from cloudshell.shell.flows.connectivity.driver_response import DriverResponse
-from cloudshell.shell.flows.connectivity.driver_response_root import DriverResponseRoot
-from cloudshell.shell.flows.connectivity.connectivity_request import ConnectivityActionRequest
+from cloudshell.shell.flows.connectivity.models.driver_request import DriverRequest
+from cloudshell.shell.flows.connectivity.models.driver_response import DriverResponse
+from cloudshell.shell.flows.connectivity.models.driver_response_root import DriverResponseRoot
+from cloudshell.shell.flows.connectivity.models.connectivity_request import ConnectivityActionRequest
 
 
 def connectivity_request_from_json(json_request):

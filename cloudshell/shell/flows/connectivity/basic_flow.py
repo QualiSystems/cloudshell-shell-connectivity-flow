@@ -10,15 +10,15 @@ from threading import Thread, current_thread
 
 from cloudshell.logging.utils.decorators import command_logging
 
-from cloudshell.shell.flows.connectivity.connectivity_result import ConnectivitySuccessResponse, \
+from cloudshell.shell.flows.connectivity.models.connectivity_result import ConnectivitySuccessResponse, \
     ConnectivityErrorResponse
-from cloudshell.shell.flows.connectivity.driver_response import DriverResponse
-from cloudshell.shell.flows.connectivity.driver_response_root import DriverResponseRoot
+from cloudshell.shell.flows.connectivity.models.driver_response import DriverResponse
+from cloudshell.shell.flows.connectivity.models.driver_response_root import DriverResponseRoot
 from cloudshell.shell.flows.connectivity.exceptions import ApplyConnectivityException
 from cloudshell.shell.flows.connectivity.interfaces import ConnectivityFlowInterface
-from cloudshell.shell.flows.connectivity.utils import JsonRequestDeserializer
-from cloudshell.shell.flows.connectivity.vlan_handler import VLANHandler
-from cloudshell.shell.flows.connectivity.request_validation import validate_request_action
+from cloudshell.shell.flows.connectivity.helpers.utils import JsonRequestDeserializer
+from cloudshell.shell.flows.connectivity.helpers.vlan_handler import VLANHandler
+from cloudshell.shell.flows.connectivity.helpers.request_validation import validate_request_action
 
 
 class AbstractConnectivityFlow(ConnectivityFlowInterface):
