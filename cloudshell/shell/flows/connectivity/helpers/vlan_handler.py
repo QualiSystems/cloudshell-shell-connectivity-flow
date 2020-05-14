@@ -62,4 +62,4 @@ class VLANHandler:
         if self.is_multi_vlan_supported:
             return list(map(str, result))
         else:
-            return list(",".join(list(map(str, result))))
+            return [",".join(list(map(str, result)))]

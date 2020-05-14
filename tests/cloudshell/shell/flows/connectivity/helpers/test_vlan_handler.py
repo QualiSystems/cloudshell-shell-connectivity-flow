@@ -16,7 +16,7 @@ class TestJsonRequestDeserializer(TestCase):
     def setUp(self):
         self.vlan_handler = VLANHandler()
 
-    def test_get_vlan_list_as_list(self):
+    def test_get_vlan_list(self):
         """Check that method will return list of valid VLANs."""
 
         vlan_str = "10-15,19,21-23"
@@ -38,7 +38,7 @@ class TestJsonRequestDeserializer(TestCase):
         self.assertEqual(set(result), {"10", "11", "12"})
 
     def test_get_vlan_list_as_str_vlan_range_range_is_not_supported(self):
-        """Check that method will return list with VLANs.
+        """Check that method will return string with VLANs.
 
         It will create VLANs between the given range and change start/end if needed
         """
