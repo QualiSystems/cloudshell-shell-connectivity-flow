@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import sys
 import unittest
 from collections import defaultdict
@@ -39,56 +42,6 @@ class TestConnectivityRunner(unittest.TestCase):
                 pass
 
             TestedClass(logger=self.logger)
-
-    def test_get_vlan_list(self):
-        """Check that method will return list of valid VLANs."""
-        vlan_str = "10-15,19,21-23"
-        # act
-        result = self.connectivity_flow._get_vlan_list(vlan_str=vlan_str)
-        # verify
-        self.assertEqual(set(result), {"21-23", "19", "10-15"})
-
-    def test_get_vlan_list_vlan_range_range_is_not_supported(self):
-        """Check that method will return list with VLANs.
-
-        It will create VLANs between the given range and change start/end if needed
-        """
-        self.connectivity_flow.IS_VLAN_RANGE_SUPPORTED = False
-        vlan_str = "12-10"
-        # act
-        result = self.connectivity_flow._get_vlan_list(vlan_str=vlan_str)
-        # verify
-        self.assertEqual(set(result), {"10", "11", "12"})
-
-    def test_get_vlan_list_invalid_vlan_number(self):
-        """Check that method will raise Exception if VLAN number is not valid."""
-        self.connectivity_flow._validate_vlan_number = mock.MagicMock(
-            return_value=False
-        )
-        vlan_str = "5000"
-        # act # verify
-        with self.assertRaisesRegexp(Exception, "Wrong VLAN number detected 5000"):
-            self.connectivity_flow._get_vlan_list(vlan_str=vlan_str)
-
-    def test_get_vlan_list_invalid_vlan_range(self):
-        """Check that method will raise Exception if VLAN range is not valid."""
-        self.connectivity_flow.IS_VLAN_RANGE_SUPPORTED = True
-        self.connectivity_flow._validate_vlan_range = mock.MagicMock(return_value=False)
-        vlan_str = "5000-5005"
-        # act # verify
-        with self.assertRaisesRegexp(Exception, "Wrong VLANs range detected 5000-5005"):
-            self.connectivity_flow._get_vlan_list(vlan_str=vlan_str)
-
-    def test_get_vlan_list_invalid_vlan_range_range_is_not_supported(self):
-        """Check that method will raise Exception if VLAN range is not valid."""
-        self.connectivity_flow.IS_VLAN_RANGE_SUPPORTED = False
-        self.connectivity_flow._validate_vlan_number = mock.MagicMock(
-            return_value=False
-        )
-        vlan_str = "5000-5005"
-        # act
-        with self.assertRaisesRegexp(Exception, "Wrong VLANs range detected 5000-5005"):
-            self.connectivity_flow._get_vlan_list(vlan_str=vlan_str)
 
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.current_thread")
     def test_add_vlan_executor(self, current_thread):
@@ -208,63 +161,9 @@ class TestConnectivityRunner(unittest.TestCase):
 
         self.assertEqual(self.connectivity_flow.result, expected_res)
 
-    def test_validate_request_action_no_attr(self):
-        """Check that method will raise an exception if required attr missed."""
-        with self.assertRaisesRegexp(
-            Exception,
-            "Mandatory field actionId is missing in ApplyConnectivityChanges "
-            "request json",
-        ):
-
-            class Action(object):
-                type = ""  # noqa
-
-                class connectionParams(object):
-                    mode = ""
-
-                class actionTarget(object):
-                    fullAddress = ""
-
-            self.connectivity_flow._validate_request_action(action=Action())
-
-    def test_validate_request_action_no_nested_obj(self):
-        """Check that method will raise an exception if required attr missed."""
-        with self.assertRaisesRegexp(
-            Exception, "'Action' object has no attribute 'connectionParams'"
-        ):
-
-            class Action(object):
-                type = ""  # noqa
-                actionId = ""
-
-                class actionTarget(object):
-                    fullAddress = ""
-
-            self.connectivity_flow._validate_request_action(action=Action())
-
-    def test_validate_request_action_no_attr_on_nested_obj(self):
-        """Check that method will raise an exception if required attr missed."""
-        with self.assertRaisesRegexp(
-            Exception,
-            "Mandatory field mode is missing in ApplyConnectivityChanges "
-            "request json",
-        ):
-
-            class Action(object):
-                type = ""  # noqa
-                actionId = ""
-
-                class connectionParams(object):
-                    pass
-
-                class actionTarget(object):
-                    fullAddress = ""
-
-            self.connectivity_flow._validate_request_action(action=Action())
-
     def test_apply_connectivity_changes_no_requests(self):
         """Check that method will raise exception if request is None."""
-        with self.assertRaisesRegexp(Exception, "request is None or empty"):
+        with self.assertRaisesRegexp(Exception, "Request is None or empty"):
             self.connectivity_flow.apply_connectivity_changes(request=None)
 
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.jsonpickle")
@@ -316,8 +215,12 @@ class TestConnectivityRunner(unittest.TestCase):
     @mock.patch(
         "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
     )
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list"
+    )
     def test_apply_connectivity_changes_set_vlan_action_success(
         self,
+        get_vlan_list,
         json_request_deserializer_class,
         jsonpickle,
         connectivity_success_response_class,
@@ -329,7 +232,7 @@ class TestConnectivityRunner(unittest.TestCase):
         qnq = True
         ctag = "ctag value"
         self.connectivity_flow.result[action_id] = [(True, "success action message")]
-        self.connectivity_flow._get_vlan_list = mock.MagicMock(return_value=[vlan_id])
+        get_vlan_list.return_value = [vlan_id]
         action = mock.MagicMock(
             type="setVlan",
             actionId=action_id,
@@ -414,8 +317,12 @@ class TestConnectivityRunner(unittest.TestCase):
     @mock.patch(
         "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
     )
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list"
+    )
     def test_apply_connectivity_changes_remove_vlan_action_success(
         self,
+        get_vlan_list,
         json_request_deserializer_class,
         jsonpickle,
         connectivity_success_response_class,
@@ -425,7 +332,7 @@ class TestConnectivityRunner(unittest.TestCase):
         action_id = "some action id"
         vlan_id = "test vlan id"
         self.connectivity_flow.result[action_id] = [(True, "success action message")]
-        self.connectivity_flow._get_vlan_list = mock.MagicMock(return_value=[vlan_id])
+        get_vlan_list.return_value = [vlan_id]
 
         action = mock.MagicMock(type="removeVlan", actionId=action_id)
 
@@ -464,8 +371,12 @@ class TestConnectivityRunner(unittest.TestCase):
     @mock.patch(
         "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
     )
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list"
+    )
     def test_apply_connectivity_changes_unknown_action(
         self,
+        get_vlan_list,
         json_request_deserializer_class,
         jsonpickle,
         connectivity_success_response_class,
@@ -475,7 +386,7 @@ class TestConnectivityRunner(unittest.TestCase):
         action_id = "some action id"
         vlan_id = "test vlan id"
         self.connectivity_flow.result[action_id] = [(True, "success action message")]
-        self.connectivity_flow._get_vlan_list = mock.MagicMock(return_value=[vlan_id])
+        get_vlan_list.return_value = [vlan_id]
 
         action = mock.MagicMock(type="UNKNOWN", actionId=action_id)
 
