@@ -28,7 +28,6 @@ class AttributeNameValue(object):
 
 
 class ActionTarget:
-
     def __init__(self, full_name="", full_address=""):
         """
         Describes a connectivity action target

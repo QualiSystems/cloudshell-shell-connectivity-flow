@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import traceback
-
 from abc import abstractmethod
 from collections import defaultdict
 from threading import Thread, current_thread
