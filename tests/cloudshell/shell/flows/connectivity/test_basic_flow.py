@@ -227,13 +227,11 @@ class TestConnectivityRunner(unittest.TestCase):
         thread_class,
     ):
         """Check that method will add success response for the set_vlan action."""
-
         action_id = "some action id"
         vlan_id = "test vlan id"
         qnq = True
         ctag = "ctag value"
         self.connectivity_flow.result[action_id] = [(True, "success action message")]
-        # self.connectivity_flow._get_vlan_list = mock.MagicMock(return_value=[vlan_id])
         get_vlan_list.return_value = [vlan_id]
         action = mock.MagicMock(
             type="setVlan",
@@ -330,12 +328,10 @@ class TestConnectivityRunner(unittest.TestCase):
         connectivity_success_response_class,
         thread_class,
     ):
-        """ Check that method will add success response for the remove_vlan action """
-
+        """Check that method will add success response for the remove_vlan action."""
         action_id = "some action id"
         vlan_id = "test vlan id"
         self.connectivity_flow.result[action_id] = [(True, "success action message")]
-        # self.connectivity_flow._get_vlan_list = mock.MagicMock(return_value=[vlan_id])
         get_vlan_list.return_value = [vlan_id]
 
         action = mock.MagicMock(type="removeVlan", actionId=action_id)
@@ -390,7 +386,6 @@ class TestConnectivityRunner(unittest.TestCase):
         action_id = "some action id"
         vlan_id = "test vlan id"
         self.connectivity_flow.result[action_id] = [(True, "success action message")]
-        # self.connectivity_flow._get_vlan_list = mock.MagicMock(return_value=[vlan_id])
         get_vlan_list.return_value = [vlan_id]
 
         action = mock.MagicMock(type="UNKNOWN", actionId=action_id)

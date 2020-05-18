@@ -35,7 +35,6 @@ class VLANHandler:
         :param vlan_str:
         :return list of VLANs or Exception
         """
-
         result = set()
         for splitted_vlan in vlan_str.split(","):
             if "-" not in splitted_vlan:

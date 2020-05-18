@@ -19,7 +19,6 @@ class TestJsonRequestDeserializer(TestCase):
 
     def test_get_vlan_list(self):
         """Check that method will return list of valid VLANs."""
-
         vlan_str = "10-15,19,21-23"
         # act
         result = self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
@@ -53,7 +52,6 @@ class TestJsonRequestDeserializer(TestCase):
 
     def test_get_vlan_list_invalid_vlan_number(self):
         """Check that method will raise Exception if VLAN number is not valid."""
-
         self.vlan_handler.is_multi_vlan_supported = True
         self.vlan_handler.validate_vlan_number = mock.MagicMock(return_value=False)
         vlan_str = "5000"
@@ -66,7 +64,6 @@ class TestJsonRequestDeserializer(TestCase):
 
     def test_get_vlan_list_invalid_vlan_range(self):
         """Check that method will raise Exception if VLAN range is not valid."""
-
         self.vlan_handler.is_vlan_range_supported = True
         self.vlan_handler.validate_vlan_range = mock.MagicMock(return_value=False)
         vlan_str = "5000-5005"
@@ -79,7 +76,6 @@ class TestJsonRequestDeserializer(TestCase):
 
     def test_get_vlan_list_invalid_vlan_range_range_is_not_supported(self):
         """Check that method will raise Exception if VLAN range is not valid."""
-
         self.vlan_handler.is_vlan_range_supported = False
         self.vlan_handler.validate_vlan_number = mock.MagicMock(return_value=False)
         vlan_str = "5000-5005"

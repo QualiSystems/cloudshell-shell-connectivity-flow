@@ -3,14 +3,13 @@
 
 
 class AttributeNameValue(object):
-    def __init__(self, attribute_name="", attribute_value="", type=""):
-        """
-        Describes an attribute name value
+    def __init__(self, attribute_name="", attribute_value="", type=""):  # noqa,A002
+        """Describes an attribute name value.
+
         :param str attribute_name: Attribute name
         :param str attribute_value: Attribute value
         :param str type: Object type
         """
-
         self.type = type
         """:type : str"""
         self.attributeName = attribute_name
@@ -29,8 +28,8 @@ class AttributeNameValue(object):
 
 class ActionTarget:
     def __init__(self, full_name="", full_address=""):
-        """
-        Describes a connectivity action target
+        """Describes a connectivity action target.
+
         :param str full_name: full resource name
         :param str full_address: full resource address
         """
@@ -49,8 +48,11 @@ class ActionTarget:
 
 
 class ConnectionParams(object):
-    def __init__(self, type="", vlan_id="", mode="", vlan_service_attributes=None):
-        """
+    def __init__(
+        self, type="", vlan_id="", mode="", vlan_service_attributes=None  # noqa,A002
+    ):
+        """Describes a connection parameters.
+
         :param str type:
         :param str vlan_id:
         :param str mode:
@@ -82,24 +84,28 @@ class ConnectivityActionRequest(object):
     def __init__(
         self,
         action_id="",
-        type="",
+        type="",  # noqa,A002
         action_target=None,
         connection_id="",
         connection_params=None,
         connector_attributes=None,
         custom_action_attributes=None,
     ):
-        """
-        Request to perform a connectivity change
-        :param str action_id: An identifier for this action, a response with the corresponding ID is requested
-        :param str type: The action type setVlan or removeVlan
-        :param ActionTarget action_target: The target resource to apply the connectivity change to
-        :param str connection_id: The Id of the connection being updated,
-        :param ConnectionParams connection_params: Specific params for the requested connection type
-        :param list[AttributeNameValue] connector_attributes: Attributes set on the connector
-        :param list[AttributeNameValue] custom_action_attributes: Additional attributes for this action
-        """
+        """Request to perform a connectivity change.
 
+        :param str action_id: An identifier for this action,
+                a response with the corresponding ID is requested
+        :param str type: The action type setVlan or removeVlan
+        :param ActionTarget action_target:
+                The target resource to apply the connectivity change to
+        :param str connection_id: The Id of the connection being updated,
+        :param ConnectionParams connection_params:
+                Specific params for the requested connection type
+        :param list[AttributeNameValue] connector_attributes:
+                Attributes set on the connector
+        :param list[AttributeNameValue] custom_action_attributes:
+                Additional attributes for this action
+        """
         self.actionId = action_id
         self.type = type
         self.actionTarget = action_target
