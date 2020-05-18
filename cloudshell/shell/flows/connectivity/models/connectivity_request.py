@@ -45,7 +45,8 @@ class ActionTarget:
     @classmethod
     def from_dict(cls, dictionary):
         return ActionTarget(
-            full_name=dictionary["fullName"], full_address=dictionary["fullAddress"])
+            full_name=dictionary["fullName"], full_address=dictionary["fullAddress"]
+        )
 
 
 class ConnectionParams(object):
@@ -80,14 +81,14 @@ class ConnectivityActionRequest(object):
     REMOVE_VLAN = "removeVlan"
 
     def __init__(
-            self,
-            action_id="",
-            type="",
-            action_target=None,
-            connection_id="",
-            connection_params=None,
-            connector_attributes=None,
-            custom_action_attributes=None
+        self,
+        action_id="",
+        type="",
+        action_target=None,
+        connection_id="",
+        connection_params=None,
+        connector_attributes=None,
+        custom_action_attributes=None
     ):
         """
         Request to perform a connectivity change

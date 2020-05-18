@@ -56,7 +56,7 @@ class VLANHandler:
                 else:
                     start, end = map(int, splitted_vlan.split("-"))
                     if self._validate_vlan_number(start) and self._validate_vlan_number(
-                            end
+                        end
                     ):
                         if start > end:
                             start, end = end, start

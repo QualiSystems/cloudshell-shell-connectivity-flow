@@ -59,7 +59,8 @@ class TestJsonRequestDeserializer(TestCase):
         vlan_str = "5000"
         # act # verify
         with self.assertRaisesRegexp(
-                VLANHandlerException, "Wrong VLAN number detected {vlan_str}".format(vlan_str=vlan_str)
+                VLANHandlerException,
+                "Wrong VLAN number detected {vlan_str}".format(vlan_str=vlan_str),
         ):
             self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
 
@@ -71,7 +72,8 @@ class TestJsonRequestDeserializer(TestCase):
         vlan_str = "5000-5005"
         # act # verify
         with self.assertRaisesRegexp(
-                VLANHandlerException, "Wrong VLANs range detected {vlan_str}".format(vlan_str=vlan_str)
+                VLANHandlerException,
+                "Wrong VLANs range detected {vlan_str}".format(vlan_str=vlan_str),
         ):
             self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
 
@@ -83,6 +85,7 @@ class TestJsonRequestDeserializer(TestCase):
         vlan_str = "5000-5005"
         # act
         with self.assertRaisesRegexp(
-                VLANHandlerException, "Wrong VLANs range detected {vlan_str}".format(vlan_str=vlan_str)
+                VLANHandlerException,
+                "Wrong VLANs range detected {vlan_str}".format(vlan_str=vlan_str),
         ):
             self.vlan_handler.get_vlan_list(vlan_str=vlan_str)

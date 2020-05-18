@@ -75,7 +75,8 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
         driver_response_root = DriverResponseRoot()
         vlan_handler = VLANHandler(
             is_vlan_range_supported=self.IS_VLAN_RANGE_SUPPORTED,
-            is_multi_vlan_supported=self.IS_MULTI_VLAN_SUPPORTED)
+            is_multi_vlan_supported=self.IS_MULTI_VLAN_SUPPORTED,
+        )
 
         for action in holder.driverRequest.actions:
             self._logger.info("Action: ", action.__dict__)
@@ -89,14 +90,16 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                 qnq = False
                 ctag = ""
                 for attribute in action.connectionParams.vlanServiceAttributes:
-                    if (attribute.attributeName.lower() == "qnq"
-                            and attribute.attributeValue.lower() == "true"):
+                    if (
+                        attribute.attributeName.lower() == "qnq"
+                        and attribute.attributeValue.lower() == "true"
+                    ):
                         qnq = True
                     if attribute.attributeName.lower() == "ctag":
                         ctag = attribute.attributeValue
 
                 for vlan_id in vlan_handler.get_vlan_list(
-                        action.connectionParams.vlanId
+                    action.connectionParams.vlanId
                 ):
                     add_vlan_thread = Thread(
                         target=self._add_vlan_executor,
@@ -106,7 +109,7 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                     add_vlan_thread_list.append(add_vlan_thread)
             elif action.type == "removeVlan":
                 for vlan_id in vlan_handler.get_vlan_list(
-                        action.connectionParams.vlanId
+                    action.connectionParams.vlanId
                 ):
                     remove_vlan_thread = Thread(
                         target=self._remove_vlan_executor,

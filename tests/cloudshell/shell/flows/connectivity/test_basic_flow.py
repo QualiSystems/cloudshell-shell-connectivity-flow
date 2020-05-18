@@ -216,7 +216,8 @@ class TestConnectivityRunner(unittest.TestCase):
         "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
     )
     @mock.patch(
-        "cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list")
+        "cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list"
+    )
     def test_apply_connectivity_changes_set_vlan_action_success(
         self,
         get_vlan_list,

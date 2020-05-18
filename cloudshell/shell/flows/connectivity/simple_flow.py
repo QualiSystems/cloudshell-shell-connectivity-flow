@@ -28,7 +28,7 @@ def connectivity_request_from_json(json_request):
 
 
 def apply_connectivity_changes(
-        request, add_vlan_action, remove_vlan_action, logger=None
+    request, add_vlan_action, remove_vlan_action, logger=None
 ):
     """
     Standard implementation for the apply_connectivity_changes operation
@@ -71,5 +71,3 @@ def apply_connectivity_changes(
     driver_response.actionResults = results
     driver_response_root.driverResponse = driver_response
     return driver_response_root
-
-

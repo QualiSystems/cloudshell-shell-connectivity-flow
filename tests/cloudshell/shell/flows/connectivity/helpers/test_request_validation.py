@@ -4,7 +4,9 @@
 import sys
 from unittest import TestCase
 
-from cloudshell.shell.flows.connectivity.helpers.request_validation import validate_request_action
+from cloudshell.shell.flows.connectivity.helpers.request_validation import (
+    validate_request_action,
+)
 
 if sys.version_info >= (3, 0):
     from unittest import mock
