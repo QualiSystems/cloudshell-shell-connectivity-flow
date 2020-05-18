@@ -1,6 +1,8 @@
 from unittest import TestCase
 
-from cloudshell.shell.flows.connectivity.driver_response_root import DriverResponseRoot
+from cloudshell.shell.flows.connectivity.models.driver_response_root import (
+    DriverResponseRoot,
+)
 
 
 class TestDriverResponseRoot(TestCase):

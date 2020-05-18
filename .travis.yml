@@ -19,9 +19,72 @@ jobs:
       after_success: codecov
     - env: TOXENV=build
     - env: TOXENV=pre-commit
+    - stage: Deploy to Test PyPI release
+      env: TOXENV=build
+      before_script: sed -i -E "s/^([0-9]+\.[0-9]+\.[0-9]+)$/\1.$TRAVIS_BUILD_NUMBER/" version.txt
+      deploy:
+        distributions: skip
+        skip_cleanup: true
+        provider: pypi
+        server: https://test.pypi.org/legacy/
+        user: "__token__"
+        password:
+          secure: "KMlK6dZov/K6OVYRDZsorHgtVWK0Fl1Yi4Az1ETmj1mspSMxuAquUTmj7yMaSqT0dQxj482+RSRUND1aMS1Q+gux8MEH5cyIUj4sFwkwXSdCMnmqdFxveqP6okdOvnFb5EEMjpS/QdkO1vB9eX1OnBZ9zRRKgg2yhzgJwTPmRFZKr1Up/hisvTE26Pb/2kzlxrKmc3AY50jmWM2s5NVrafUCLBazCDpXvMsJrczmHJ2qS9JawaBcdQHaTO2Y2PTmpd63thenyN1uvjvGkzqaOpS65rehyvM0YpPoHBkasfyPZr90PD0ClnYw99M6qbM9bzGSVOSrp/78qxzvUy3ENx1ToO0RzccQVzxrOj0lfVTfRxz0sBPK3OBZsmbZVgB8xroHoI/MhDsH13XZ7hRo0v7KRRgq08w+NkOIAg3xYko5+YlEzx7VNbTjGDoMeHaLhSMhlZrDdAQBfH/KSfhctJUe/b6/ng7xg2Tn7DKPVSzuam/gIorZz0BpBw+0MRDvZ8ik3ZXcXsYHX3MkukDe3jB88DGjAov1VE2NrKp4NvslrjWWtzrJid+eLzgW9uPGbhJETX6ahiZlKlZjoZ9MMyhhvI5eJ/tQVLwZSYlxCO2opDjT2ETkdvXSlzt0F4auozROHfDjD5PWSYXQ+u94meKMn7lBpYEDzzE7HyGEvfI="
+        on:
+          branch: dev
+    - stage: Deploy to PyPI release
+      env: TOXENV=build
+      deploy:
+        distributions: skip
+        skip_cleanup: true
+        provider: pypi
+        user: "__token__"
+        password:
+          secure: "KZfkmolZ5MPCgtS60m2F2aTgws7wbCfBwX8pugudnwuzjctiHW6cWBQuWNd4iBpcmm7pR36gqah+Bz6Hc/u4LCIVcZTQXPODELlQb/aX4TqcXu2ze04z3IbNo5Eatfkm3ikPaDcrqIseAcu441VMOlStphGiNXkiZ7KGwPpOPY9MwcGPESWRGNZ4TGehAbJoNmG6oYDIDa8Mard67Tu8DxIizIi2cFdU/UCuQ2190onlnOEv4UZgOC2VjpG1FW55Bkr5g9O1W6jajrhPxwIZOt3h8V0EhhATTyIo/t7t7wOgoLg9GZIk/UcRrYhBBN56gqAeOSZ6ojvMeJqzaf0lKvdDgc2HfaWL6rMOuWEHAi7/LLOYur14mi+yyvGqXHvGHiGreVqjPhaaocEZpA8HqSc4hF+xeNz/UIEyLT2URw1cQqnzrB8S7xDV3Tj9BxhncpN7iWKmb8q+LB8mWLdFVXgZHpoUeofZbg6bW2V+IZoRooGJ0FH9HM0l/e57nnUUygcVqsMCLIRJI7rF9TSWgBIcFDTgAlxGkGidsz12rX6YUlGEkALDDY8LFXY6tGrgCc3gXiGCcHYIGraJ9l1rvO8gvhfYG8GGx+QKdAq5rrTtoJKR6SoVHKItxSK1S28j1Fn5XoIhL6jS1EnqN45ZZAkSjn7Y6YRSepB8UsbvN2A="
+        on:
+          tags: true
+    - stage: Create GitHub release
+      env: TOXENV=build
+      before_deploy:
+        - export AUTHOR_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
+        - export AUTHOR_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
+        - export GIT_TAG="$(cat version.txt | tr -d ' \t\n\r')"
+        - git config --local user.name $AUTHOR_NAME
+        - git config --local user.email $AUTHOR_EMAIL
+        - git tag $GIT_TAG
+      deploy:
+        provider: releases
+        skip_cleanup: true
+        draft: true
+        api_key:
+          secure: "Efiv6WJXL/aRgF148vNiUJEGK/1KSC6E5J8sCND7klbXzvoNVpz45HX5/kdWPqLPc6USenAw43k319F1LyVxayu0cMrTiTkW7sHPZa5GvTqKBPIDkz1h6/wNBuE2pe33RVS3BiCoetHSKUICJj9FshmL4iLJ5gcxv3JWBw8j87F9qjNTCwbD/lT4dkkHBYpRr/ACu2Qd6puJqVr++9VV90IbRs3poQ0cfKHpGXQwDUofkmE52ZfcnQsCq7/mJRmmlQElYi3vrwVTgrJOPELTxv/ttclQq2eYqxb/liL/26DjTN1IyyyOct2p6S/zc6VmzWv+AUBLQ4rc22xQ6hvSM/78AizfmbqYM9zh/oFjexYFSzBiCnjy+O5W5FOP7cAiWi4V0zeIlCyObEd8diMqnh+dSxfLn0xV8z+0Mn9wZwdStGaQtyYRUs4qb+ArL8tBGtEcrCAuX4lIxuXf7W9cOd/6j5sRcCLICSV5ajAg63JXg98DLTdi44EiMtDMNaKly5QleBP/1Uh6tJaWzwq06kD+bfGCkPrM3nYWp/pdE5P4M4hfa3IS0C+lgf6uaDxJGrcAO0gSUHfMkHHp/SQge6ptiPo22GofiHXwwvOsrvDP1Air+x0be1YHKlUMKlhAKbdDCxMuDby4rok8CuDhQX3DQGcrhGP6j6+WZHZq8mU="
+        file_glob: true
+        file: dist/*
+        name: cloudshell-shell-connectivity-flow $GIT_TAG
+        target_commitish: master
+        on:
+          branch: master
+    - stage: Check version
+      language: bash
+      install:
+        - git clone https://github.com/$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
+        - cd $TRAVIS_REPO_SLUG
+        - git checkout -qf $TRAVIS_PULL_REQUEST_BRANCH
+      script: "! git diff --exit-code --quiet origin/master version.txt"
 
 install:
   - pip install tox
   - pip install codecov
 
 script: tox
+
+stages:
+  - name: Check version
+    if: branch = master AND type = pull_request
+  - name: Test
+  - name: Deploy to Test PyPI release
+    if: branch = dev AND type != pull_request
+  - name: Create GitHub release
+    if: branch = master AND type != pull_request
+  - name: Deploy to PyPI release
+    if: tag IS present

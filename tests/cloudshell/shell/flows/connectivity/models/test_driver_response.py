@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from cloudshell.shell.flows.connectivity.driver_response import DriverResponse
+from cloudshell.shell.flows.connectivity.models.driver_response import DriverResponse
 
 
 class TestDriverResponse(TestCase):
