@@ -1,24 +1,30 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import jsonpickle
 import traceback
 
 from abc import abstractmethod
 from collections import defaultdict
 from threading import Thread, current_thread
 
+import jsonpickle
 from cloudshell.logging.utils.decorators import command_logging
 
-from cloudshell.shell.flows.connectivity.models.connectivity_result import ConnectivitySuccessResponse, \
-    ConnectivityErrorResponse
-from cloudshell.shell.flows.connectivity.models.driver_response import DriverResponse
-from cloudshell.shell.flows.connectivity.models.driver_response_root import DriverResponseRoot
 from cloudshell.shell.flows.connectivity.exceptions import ApplyConnectivityException
-from cloudshell.shell.flows.connectivity.interfaces import ConnectivityFlowInterface
+from cloudshell.shell.flows.connectivity.helpers.request_validation import (
+    validate_request_action,
+)
 from cloudshell.shell.flows.connectivity.helpers.utils import JsonRequestDeserializer
 from cloudshell.shell.flows.connectivity.helpers.vlan_handler import VLANHandler
-from cloudshell.shell.flows.connectivity.helpers.request_validation import validate_request_action
+from cloudshell.shell.flows.connectivity.interfaces import ConnectivityFlowInterface
+from cloudshell.shell.flows.connectivity.models.connectivity_result import (
+    ConnectivityErrorResponse,
+    ConnectivitySuccessResponse,
+)
+from cloudshell.shell.flows.connectivity.models.driver_response import DriverResponse
+from cloudshell.shell.flows.connectivity.models.driver_response_root import (
+    DriverResponseRoot,
+)
 
 
 class AbstractConnectivityFlow(ConnectivityFlowInterface):
@@ -67,8 +73,9 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
         add_vlan_thread_list = []
         remove_vlan_thread_list = []
         driver_response_root = DriverResponseRoot()
-        vlan_handler = VLANHandler(is_vlan_range_supported=self.IS_VLAN_RANGE_SUPPORTED,
-                                   is_multi_vlan_supported=self.IS_MULTI_VLAN_SUPPORTED)
+        vlan_handler = VLANHandler(
+            is_vlan_range_supported=self.IS_VLAN_RANGE_SUPPORTED,
+            is_multi_vlan_supported=self.IS_MULTI_VLAN_SUPPORTED)
 
         for action in holder.driverRequest.actions:
             self._logger.info("Action: ", action.__dict__)
@@ -82,15 +89,15 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                 qnq = False
                 ctag = ""
                 for attribute in action.connectionParams.vlanServiceAttributes:
-                    if (
-                            attribute.attributeName.lower() == "qnq"
-                            and attribute.attributeValue.lower() == "true"
-                    ):
+                    if (attribute.attributeName.lower() == "qnq"
+                            and attribute.attributeValue.lower() == "true"):
                         qnq = True
                     if attribute.attributeName.lower() == "ctag":
                         ctag = attribute.attributeValue
 
-                for vlan_id in vlan_handler.get_vlan_list(action.connectionParams.vlanId):
+                for vlan_id in vlan_handler.get_vlan_list(
+                        action.connectionParams.vlanId
+                ):
                     add_vlan_thread = Thread(
                         target=self._add_vlan_executor,
                         name=action_id,
@@ -98,7 +105,9 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                     )
                     add_vlan_thread_list.append(add_vlan_thread)
             elif action.type == "removeVlan":
-                for vlan_id in vlan_handler.get_vlan_list(action.connectionParams.vlanId):
+                for vlan_id in vlan_handler.get_vlan_list(
+                        action.connectionParams.vlanId
+                ):
                     remove_vlan_thread = Thread(
                         target=self._remove_vlan_executor,
                         name=action_id,
@@ -106,7 +115,11 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                     )
                     remove_vlan_thread_list.append(remove_vlan_thread)
             else:
-                self._logger.warning("Undefined action type determined '{}': {}".format(action.type, action.__dict__))
+                self._logger.warning(
+                    "Undefined action type determined '{}': {}".format(
+                        action.type, action.__dict__
+                    )
+                )
                 continue
 
         # Start all created remove_vlan_threads
@@ -151,7 +164,9 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
 
         driver_response.actionResults = request_result
         driver_response_root.driverResponse = driver_response
-        return str(jsonpickle.encode(driver_response_root, unpicklable=False))  # .replace("[true]", "true")
+        return str(
+            jsonpickle.encode(driver_response_root, unpicklable=False)
+        )  # .replace("[true]", "true")
 
     def _add_vlan_executor(self, vlan_id, full_name, port_mode, qnq, c_tag):
         """Run flow to add VLAN(s) to interface.

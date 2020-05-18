@@ -4,24 +4,32 @@
 import logging
 
 import jsonpickle
+
+from cloudshell.shell.flows.connectivity.exceptions import ApplyConnectivityException
+from cloudshell.shell.flows.connectivity.models.connectivity_request import (
+    ConnectivityActionRequest,
+)
 from cloudshell.shell.flows.connectivity.models.driver_request import DriverRequest
 from cloudshell.shell.flows.connectivity.models.driver_response import DriverResponse
-from cloudshell.shell.flows.connectivity.models.driver_response_root import DriverResponseRoot
-from cloudshell.shell.flows.connectivity.models.connectivity_request import ConnectivityActionRequest
+from cloudshell.shell.flows.connectivity.models.driver_response_root import (
+    DriverResponseRoot,
+)
 
 
 def connectivity_request_from_json(json_request):
     json_obj = jsonpickle.decode(json_request)
-    if 'driverRequest' not in json_obj:
-        raise Exception('ConnectivityOperations', 'Deserialized request is None or empty')
+    if "driverRequest" not in json_obj:
+        raise ApplyConnectivityException("Deserialized request is None or empty")
     request = DriverRequest()
     request.actions = []
-    for action in json_obj['driverRequest']['actions']:
+    for action in json_obj["driverRequest"]["actions"]:
         request.actions.append(ConnectivityActionRequest.from_dict(action))
     return request
 
 
-def apply_connectivity_changes(request, add_vlan_action, remove_vlan_action, logger=None):
+def apply_connectivity_changes(
+        request, add_vlan_action, remove_vlan_action, logger=None
+):
     """
     Standard implementation for the apply_connectivity_changes operation
     This function will accept as an input the actions to perform for add/remove vlan. It implements
@@ -39,8 +47,8 @@ def apply_connectivity_changes(request, add_vlan_action, remove_vlan_action, log
     if not logger:
         logger = logging.getLogger("apply_connectivity_changes")
 
-    if request is None or request == '':
-        raise Exception('ConnectivityOperations', 'request is None or empty')
+    if request is None or request == "":
+        raise ApplyConnectivityException("Request is None or empty")
 
     holder = connectivity_request_from_json(request)
 
@@ -49,7 +57,7 @@ def apply_connectivity_changes(request, add_vlan_action, remove_vlan_action, log
     driver_response_root = DriverResponseRoot()
 
     for action in holder.actions:
-        logger.info('Action: ', action.__dict__)
+        logger.info("Action: ", action.__dict__)
         if action.type == ConnectivityActionRequest.SET_VLAN:
             action_result = add_vlan_action(action)
 

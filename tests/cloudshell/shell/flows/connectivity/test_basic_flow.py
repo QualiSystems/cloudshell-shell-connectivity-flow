@@ -167,7 +167,9 @@ class TestConnectivityRunner(unittest.TestCase):
             self.connectivity_flow.apply_connectivity_changes(request=None)
 
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.jsonpickle")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
+    )
     def test_apply_connectivity_changes_no_json_req_holder(
         self, json_request_deserializer_class, jsonpickle
     ):
@@ -182,7 +184,9 @@ class TestConnectivityRunner(unittest.TestCase):
 
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.DriverResponseRoot")
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.jsonpickle")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
+    )
     def test_apply_connectivity_changes(
         self, json_request_deserializer_class, jsonpickle, driver_response_root_class
     ):
@@ -204,10 +208,15 @@ class TestConnectivityRunner(unittest.TestCase):
         self.assertEqual(result, str(jsonpickle.encode()))
 
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.Thread")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.ConnectivitySuccessResponse")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.ConnectivitySuccessResponse"
+    )
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.jsonpickle")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
+    )
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list")
     def test_apply_connectivity_changes_set_vlan_action_success(
         self,
         get_vlan_list,
@@ -266,9 +275,13 @@ class TestConnectivityRunner(unittest.TestCase):
             ),
         )
 
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.ConnectivityErrorResponse")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.ConnectivityErrorResponse"
+    )
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.jsonpickle")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
+    )
     def test_apply_connectivity_changes_set_vlan_action_error(
         self,
         json_request_deserializer_class,
@@ -298,10 +311,16 @@ class TestConnectivityRunner(unittest.TestCase):
         )
 
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.Thread")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.ConnectivitySuccessResponse")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.ConnectivitySuccessResponse"
+    )
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.jsonpickle")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
+    )
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list"
+    )
     def test_apply_connectivity_changes_remove_vlan_action_success(
         self,
         get_vlan_list,
@@ -348,10 +367,16 @@ class TestConnectivityRunner(unittest.TestCase):
         )
 
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.Thread")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.ConnectivitySuccessResponse")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.ConnectivitySuccessResponse"
+    )
     @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.jsonpickle")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer")
-    @mock.patch("cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list")
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.JsonRequestDeserializer"
+    )
+    @mock.patch(
+        "cloudshell.shell.flows.connectivity.basic_flow.VLANHandler.get_vlan_list"
+    )
     def test_apply_connectivity_changes_unknown_action(
         self,
         get_vlan_list,

@@ -19,9 +19,7 @@ def validate_request_action(action):
     """
     is_fail = False
     fail_attribute = ""
-    for (
-            class_attribute
-    ) in APPLY_CONNECTIVITY_CHANGES_ACTION_REQUIRED_ATTRIBUTE_LIST:
+    for class_attribute in APPLY_CONNECTIVITY_CHANGES_ACTION_REQUIRED_ATTRIBUTE_LIST:
         if type(class_attribute) is tuple:
             if not hasattr(action, class_attribute[0]):
                 is_fail = True
@@ -35,5 +33,7 @@ def validate_request_action(action):
                 fail_attribute = class_attribute
 
     if is_fail:
-        raise RequestValidatorException("Mandatory field {0} is missing "
-                                        "in ApplyConnectivityChanges request json".format(fail_attribute), )
+        raise RequestValidatorException(
+            "Mandatory field {0} is missing "
+            "in ApplyConnectivityChanges request json".format(fail_attribute),
+        )

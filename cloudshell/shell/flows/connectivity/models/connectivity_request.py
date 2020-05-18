@@ -1,5 +1,9 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+
 class AttributeNameValue(object):
-    def __init__(self, attribute_name='', attribute_value='', type=''):
+    def __init__(self, attribute_name="", attribute_value="", type=""):
         """
         Describes an attribute name value
         :param str attribute_name: Attribute name
@@ -17,15 +21,15 @@ class AttributeNameValue(object):
     @classmethod
     def from_dict(cls, dictionary):
         att = AttributeNameValue()
-        att.type = dictionary['type']
-        att.attributeName = dictionary['attributeName']
-        att.attributeValue = dictionary['attributeValue']
+        att.type = dictionary["type"]
+        att.attributeName = dictionary["attributeName"]
+        att.attributeValue = dictionary["attributeValue"]
         return att
 
 
 class ActionTarget:
 
-    def __init__(self, full_name='', full_address=''):
+    def __init__(self, full_name="", full_address=""):
         """
         Describes a connectivity action target
         :param str full_name: full resource name
@@ -40,11 +44,12 @@ class ActionTarget:
 
     @classmethod
     def from_dict(cls, dictionary):
-        return ActionTarget(full_name=dictionary['fullName'], full_address=dictionary['fullAddress'])
+        return ActionTarget(
+            full_name=dictionary["fullName"], full_address=dictionary["fullAddress"])
 
 
 class ConnectionParams(object):
-    def __init__(self, type='', vlan_id='', mode='', vlan_service_attributes=[]):
+    def __init__(self, type="", vlan_id="", mode="", vlan_service_attributes=None):
         """
         :param str type:
         :param str vlan_id:
@@ -54,27 +59,36 @@ class ConnectionParams(object):
         self.type = type
         self.vlanId = vlan_id
         self.mode = mode
-        self.vlanServiceAttributes = vlan_service_attributes
-        self.type = 'setVlanParameter'
+        self.vlanServiceAttributes = vlan_service_attributes or []
+        self.type = "setVlanParameter"
 
     @classmethod
     def from_dict(cls, dictionary):
         con_params = ConnectionParams()
-        con_params.vlanId = dictionary['vlanId']
-        con_params.type = dictionary['type']
-        con_params.vlanServiceAttributes = [AttributeNameValue.from_dict(attr) for attr
-                                            in dictionary['vlanServiceAttributes']]
-        con_params.mode = dictionary['mode']
+        con_params.vlanId = dictionary["vlanId"]
+        con_params.type = dictionary["type"]
+        con_params.vlanServiceAttributes = [
+            AttributeNameValue.from_dict(attr)
+            for attr in dictionary["vlanServiceAttributes"]
+        ]
+        con_params.mode = dictionary["mode"]
         return con_params
 
 
-
 class ConnectivityActionRequest(object):
-    SET_VLAN = 'setVlan'
-    REMOVE_VLAN = 'removeVlan'
+    SET_VLAN = "setVlan"
+    REMOVE_VLAN = "removeVlan"
 
-    def __init__(self, action_id='', type='', action_target=None, connection_id='', connection_params=None,
-                 connector_attributes=None, custom_action_attributes=None):
+    def __init__(
+            self,
+            action_id="",
+            type="",
+            action_target=None,
+            connection_id="",
+            connection_params=None,
+            connector_attributes=None,
+            custom_action_attributes=None
+    ):
         """
         Request to perform a connectivity change
         :param str action_id: An identifier for this action, a response with the corresponding ID is requested
@@ -97,21 +111,25 @@ class ConnectivityActionRequest(object):
     @classmethod
     def from_dict(cls, json):
         request = ConnectivityActionRequest()
-        request.actionId = json['actionId']
-        request.type = json['type']
-        request.actionTarget = ActionTarget.from_dict(json['actionTarget'])
-        request.connectionId = json['connectionId']
-        request.connectionParams = ConnectionParams.from_dict(json['connectionParams'])
+        request.actionId = json["actionId"]
+        request.type = json["type"]
+        request.actionTarget = ActionTarget.from_dict(json["actionTarget"])
+        request.connectionId = json["connectionId"]
+        request.connectionParams = ConnectionParams.from_dict(json["connectionParams"])
 
-        if 'connectorAttributes' in json:
-            request.connectorAttributes = [AttributeNameValue.from_dict(attr) for attr
-                                           in json['connectorAttributes']]
+        if "connectorAttributes" in json:
+            request.connectorAttributes = [
+                AttributeNameValue.from_dict(attr)
+                for attr in json["connectorAttributes"]
+            ]
         else:
             request.connectorAttributes = []
 
-        if 'customActionAttributes' in json:
-            request.customActionAttributes = [AttributeNameValue.from_dict(attr) for attr
-                                              in json['customActionAttributes']]
+        if "customActionAttributes" in json:
+            request.customActionAttributes = [
+                AttributeNameValue.from_dict(attr)
+                for attr in json["customActionAttributes"]
+            ]
         else:
             request.customActionAttributes = []
 

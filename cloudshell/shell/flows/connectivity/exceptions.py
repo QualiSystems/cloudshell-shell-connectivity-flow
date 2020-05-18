@@ -2,13 +2,17 @@
 # -*- coding: utf-8 -*-
 
 
-class VLANHandlerException(Exception):
+class ConnectivityException(Exception):
     pass
 
 
-class RequestValidatorException(Exception):
+class VLANHandlerException(ConnectivityException):
     pass
 
 
-class ApplyConnectivityException(Exception):
+class RequestValidatorException(ConnectivityException):
+    pass
+
+
+class ApplyConnectivityException(ConnectivityException):
     pass
