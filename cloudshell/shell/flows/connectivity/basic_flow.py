@@ -16,6 +16,7 @@ from cloudshell.shell.flows.connectivity.helpers.request_validation import (
 from cloudshell.shell.flows.connectivity.helpers.utils import JsonRequestDeserializer
 from cloudshell.shell.flows.connectivity.helpers.vlan_handler import VLANHandler
 from cloudshell.shell.flows.connectivity.interfaces import ConnectivityFlowInterface
+
 from cloudshell.shell.flows.connectivity.models.connectivity_result import (
     ConnectivityErrorResponse,
     ConnectivitySuccessResponse,
