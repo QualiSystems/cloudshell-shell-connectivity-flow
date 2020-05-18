@@ -88,7 +88,7 @@ class ConnectivityActionRequest(object):
         connection_id="",
         connection_params=None,
         connector_attributes=None,
-        custom_action_attributes=None
+        custom_action_attributes=None,
     ):
         """
         Request to perform a connectivity change
