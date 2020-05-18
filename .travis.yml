@@ -8,7 +8,6 @@ jobs:
       env: TOXENV=py27-master
       after_success: codecov
     - if: branch = master
-      python: 3.7
       env: TOXENV=py37-master
       after_success: codecov
     - if: branch != master
@@ -16,13 +15,10 @@ jobs:
       env: TOXENV=py27-dev
       after_success: codecov
     - if: branch != master
-      python: 3.7
       env: TOXENV=py37-dev
       after_success: codecov
     - env: TOXENV=build
-      python: 2.7
     - env: TOXENV=pre-commit
-      python: 3.7
     - stage: Deploy to Test PyPI release
       env: TOXENV=build
       before_script: sed -i -E "s/^([0-9]+\.[0-9]+\.[0-9]+)$/\1.$TRAVIS_BUILD_NUMBER/" version.txt
@@ -33,7 +29,7 @@ jobs:
         server: https://test.pypi.org/legacy/
         user: "__token__"
         password:
-          secure: "gFcW4Mwp1e0CB41FMYxRL+UuHDpsuh/8QQEYXtMkdgTr5ek2hpIKG/57eJKXIlbTmjky6VVFl8k+frWGVc+brBJJKQXkuftZnK9LiKHdA+hReYmZfvsVnqrpjTeeCCeytCekF9ZlJesaU4kiadlMTVM51/LnuSZxqS4ZGIDIrbOBUYgQMtFcc5yPnqGfuzsRK+VdVYTx0003ysOa4MprFqLB9Pbha0ZofH9LoVwvnWlFohn+iLZC7NKzLNXes0tI78q74nsaDF7Z/MhP4UHPUP84WqocZK/QVz72sIHp2D617POWgAV7I9p5drKrv+ufOmbELp0zKlwdr+IxqBjbv7LBeLnpUGtg9/AkdS7cg3VqakhivA2d8RBRM6MeZHaOkhH7BK63NQBqpn+vecuoGveoASlNClT/SIQOf85Cwrc+hotBaJn+Q0H5bXyI5bJbK27dOAmf/0oRUzbrGGsvAxckM7da1I49l21aPSLdFgZg61S9c/h/og3pMZhs/dyiXYUgnvTh7aSbaI/Xw6zOFMyQlgPo4FGBEXaL1pF6ckbKNQXy85zfTlFAKK5Rs/e4zA46efyFZ3wwzonRS7eruAOxGAmDTbIP+VgzP2U2G1y8aY9SoPixSLiWjykCHadY4ryMMEiSSfCYae9LhTF5x9UfSiDXCT5elyBoFAHISEs="
+          secure: "KMlK6dZov/K6OVYRDZsorHgtVWK0Fl1Yi4Az1ETmj1mspSMxuAquUTmj7yMaSqT0dQxj482+RSRUND1aMS1Q+gux8MEH5cyIUj4sFwkwXSdCMnmqdFxveqP6okdOvnFb5EEMjpS/QdkO1vB9eX1OnBZ9zRRKgg2yhzgJwTPmRFZKr1Up/hisvTE26Pb/2kzlxrKmc3AY50jmWM2s5NVrafUCLBazCDpXvMsJrczmHJ2qS9JawaBcdQHaTO2Y2PTmpd63thenyN1uvjvGkzqaOpS65rehyvM0YpPoHBkasfyPZr90PD0ClnYw99M6qbM9bzGSVOSrp/78qxzvUy3ENx1ToO0RzccQVzxrOj0lfVTfRxz0sBPK3OBZsmbZVgB8xroHoI/MhDsH13XZ7hRo0v7KRRgq08w+NkOIAg3xYko5+YlEzx7VNbTjGDoMeHaLhSMhlZrDdAQBfH/KSfhctJUe/b6/ng7xg2Tn7DKPVSzuam/gIorZz0BpBw+0MRDvZ8ik3ZXcXsYHX3MkukDe3jB88DGjAov1VE2NrKp4NvslrjWWtzrJid+eLzgW9uPGbhJETX6ahiZlKlZjoZ9MMyhhvI5eJ/tQVLwZSYlxCO2opDjT2ETkdvXSlzt0F4auozROHfDjD5PWSYXQ+u94meKMn7lBpYEDzzE7HyGEvfI="
         on:
           branch: dev
     - stage: Deploy to PyPI release
@@ -44,7 +40,7 @@ jobs:
         provider: pypi
         user: "__token__"
         password:
-          secure: "pC1h1qG9vuOC+xhhHPo+F98jzyn1kmqJ2SyIrDx80oy/yOxS3222hXUnkxz+Tcs1plf2b8he0jJiCft8KtCuNLamqEdH3o+jr1cdcomois5B0n5xdIIXXAJzYwTsIoTBpnYXWjJKQBm0c/c7AE6Hz6TnVgb++UVNT+Bg6vS4Z2ZSlDbJZyPjzW1lzpjeRyh6YxZ2RuXTOXk3LkHHh5dVXoXb1LRK7eRHy7JFLBgptC/gqm9sqlVm+/bpAuu2eyMZr5phPeaPP0OInGwAQASKlSkuwHSKJHD6dF5fnBE+tGaeWSvy0BOCMamLnZ8eJmsFE5ED123TYxtaFTXW0AfZvAoiAOohSjjmIbpp53Mipj0r1VZyHE3uRZEqukQ0DzzVYecF0JWq+rBUAUuQdhvvnZgbJ62JOLUwys1c6E4wUafEfI/U5rMXPsN5egY3oQsBjk4jqw5DEX7ZrD0pprr3LHB0FN8kSbVogNvyJoIkaKFBaekdEsyomfjw7Pj1DCMfiTZHtCEuF8fouoq/BOIRVneo/Y9WO2KB0e1+u+0y2pvm7nUqTCk/ANolrDkR7Cs72LZ5q0VcpDEATgCx+wFYVrZFtd2kVi75zVhpkJ5dIXHATppalIKurRw54ijznzNeMRh58L/61KvKYTQaejnTloX0eBa17R4TTOHHISVAzzY="
+          secure: "KZfkmolZ5MPCgtS60m2F2aTgws7wbCfBwX8pugudnwuzjctiHW6cWBQuWNd4iBpcmm7pR36gqah+Bz6Hc/u4LCIVcZTQXPODELlQb/aX4TqcXu2ze04z3IbNo5Eatfkm3ikPaDcrqIseAcu441VMOlStphGiNXkiZ7KGwPpOPY9MwcGPESWRGNZ4TGehAbJoNmG6oYDIDa8Mard67Tu8DxIizIi2cFdU/UCuQ2190onlnOEv4UZgOC2VjpG1FW55Bkr5g9O1W6jajrhPxwIZOt3h8V0EhhATTyIo/t7t7wOgoLg9GZIk/UcRrYhBBN56gqAeOSZ6ojvMeJqzaf0lKvdDgc2HfaWL6rMOuWEHAi7/LLOYur14mi+yyvGqXHvGHiGreVqjPhaaocEZpA8HqSc4hF+xeNz/UIEyLT2URw1cQqnzrB8S7xDV3Tj9BxhncpN7iWKmb8q+LB8mWLdFVXgZHpoUeofZbg6bW2V+IZoRooGJ0FH9HM0l/e57nnUUygcVqsMCLIRJI7rF9TSWgBIcFDTgAlxGkGidsz12rX6YUlGEkALDDY8LFXY6tGrgCc3gXiGCcHYIGraJ9l1rvO8gvhfYG8GGx+QKdAq5rrTtoJKR6SoVHKItxSK1S28j1Fn5XoIhL6jS1EnqN45ZZAkSjn7Y6YRSepB8UsbvN2A="
         on:
           tags: true
     - stage: Create GitHub release
@@ -61,7 +57,7 @@ jobs:
         skip_cleanup: true
         draft: true
         api_key:
-          secure: "YqTO3VB8vEVlI2wRV/xL0Rgte4HqvA8Us66fPGA3YUkTDkcGdgmWeVd+6aHJL28G1nBjtSBuTiHFccSGXYxp/Na9yZ7d3sC4r05wZDlimxlq9Oc03vd9HCszxr70oFc/bFHyaXYwgor/qVPsUZ4STTEz9OmPRDqLXQSfO6tBEFLlhBuqf/YkASeB8/7n2A0CfzuXbclo2EPgXi1ZSZ37vlYyA/B6Kh3Jagy4wgSJfvm7u45LtOfZ8aph4ofPGXR+VeQuMmnY57uMs4P8chMb3mzfnMfTwmMBri57r6vs2DiaRVmVpXC43k8WxAANe7YNrCN70JMJd+d/JBEGE4srpRFNene2OQlz7ZkyB633NTeIZ7ttsNPDnr9Lc7fVX+T+ZcGw/II5ms6Nf0yy+/TApA3AavWlrDMVFfzvabjf+TwGKw9+vfLrkbyowhTF/tBrBaMUgZ8/OxkwghR6nxNOWqf+IJMLcg9bhUJ/70PC6h3Ggoh0JkU4lTSjmA6AHAIK1RxnGd7AvI1kKWgmnGYsld+wscTdkvLWWTqmNyGfFp2Nj9Wck7KnzbF2N1k82zPWesGGEUU7c4WpZw8s/tZwEmRJLYC6XDCMp/y9cpESmOunpsB+xIh3DgtODMOhJLf82d4yGZx/ThMPwJg+86LUOfcyNpf++uq5yjrzvs0XEEU="
+          secure: "Efiv6WJXL/aRgF148vNiUJEGK/1KSC6E5J8sCND7klbXzvoNVpz45HX5/kdWPqLPc6USenAw43k319F1LyVxayu0cMrTiTkW7sHPZa5GvTqKBPIDkz1h6/wNBuE2pe33RVS3BiCoetHSKUICJj9FshmL4iLJ5gcxv3JWBw8j87F9qjNTCwbD/lT4dkkHBYpRr/ACu2Qd6puJqVr++9VV90IbRs3poQ0cfKHpGXQwDUofkmE52ZfcnQsCq7/mJRmmlQElYi3vrwVTgrJOPELTxv/ttclQq2eYqxb/liL/26DjTN1IyyyOct2p6S/zc6VmzWv+AUBLQ4rc22xQ6hvSM/78AizfmbqYM9zh/oFjexYFSzBiCnjy+O5W5FOP7cAiWi4V0zeIlCyObEd8diMqnh+dSxfLn0xV8z+0Mn9wZwdStGaQtyYRUs4qb+ArL8tBGtEcrCAuX4lIxuXf7W9cOd/6j5sRcCLICSV5ajAg63JXg98DLTdi44EiMtDMNaKly5QleBP/1Uh6tJaWzwq06kD+bfGCkPrM3nYWp/pdE5P4M4hfa3IS0C+lgf6uaDxJGrcAO0gSUHfMkHHp/SQge6ptiPo22GofiHXwwvOsrvDP1Air+x0be1YHKlUMKlhAKbdDCxMuDby4rok8CuDhQX3DQGcrhGP6j6+WZHZq8mU="
         file_glob: true
         file: dist/*
         name: cloudshell-shell-connectivity-flow $GIT_TAG
