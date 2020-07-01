@@ -90,15 +90,17 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                 ctag = ""
                 for attribute in action.connectionParams.vlanServiceAttributes:
                     if (
-                        attribute.attributeName.lower() == "qnq"
-                        and attribute.attributeValue.lower() == "true"
+                            attribute.attributeName.lower() == "qnq"
+                            and attribute.attributeValue.lower() == "true"
                     ):
                         qnq = True
                     if attribute.attributeName.lower() == "ctag":
                         ctag = attribute.attributeValue
-
+                self._remove_vlan_flow(vlan_range=action.connectionParams.vlanId,
+                                       port_name=full_name,
+                                       port_mode=port_mode)
                 for vlan_id in vlan_handler.get_vlan_list(
-                    action.connectionParams.vlanId
+                        action.connectionParams.vlanId
                 ):
                     add_vlan_thread = Thread(
                         target=self._add_vlan_executor,
@@ -108,7 +110,7 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                     add_vlan_thread_list.append(add_vlan_thread)
             elif action.type == "removeVlan":
                 for vlan_id in vlan_handler.get_vlan_list(
-                    action.connectionParams.vlanId
+                        action.connectionParams.vlanId
                 ):
                     remove_vlan_thread = Thread(
                         target=self._remove_vlan_executor,
