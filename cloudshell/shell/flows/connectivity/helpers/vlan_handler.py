@@ -65,8 +65,7 @@ class VLANHandler:
                         raise VLANHandlerException(
                             "Wrong VLANs range detected {}".format(vlan_str),
                         )
-
         if self.is_multi_vlan_supported:
-            return list(map(str, result))
-        else:
             return [",".join(list(map(str, result)))]
+        else:
+            return list(map(str, result))
