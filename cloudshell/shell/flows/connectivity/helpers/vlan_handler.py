@@ -45,6 +45,7 @@ class VLANHandler:
                         "Wrong VLAN number detected {}".format(splitted_vlan),
                     )
             else:
+                splitted_vlan = splitted_vlan.strip()
                 if self.is_vlan_range_supported:
                     if self._validate_vlan_range(splitted_vlan):
                         result.add(splitted_vlan)
@@ -65,7 +66,9 @@ class VLANHandler:
                         raise VLANHandlerException(
                             "Wrong VLANs range detected {}".format(vlan_str),
                         )
+        vlan_range_list = list(map(str, result))
+        sorted(vlan_range_list)
         if self.is_multi_vlan_supported:
-            return [",".join(list(map(str, result)))]
+            return [",".join(vlan_range_list)]
         else:
-            return list(map(str, result))
+            return vlan_range_list
