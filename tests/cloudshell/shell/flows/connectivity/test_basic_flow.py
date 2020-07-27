@@ -255,9 +255,12 @@ class TestConnectivityRunner(unittest.TestCase):
         request = mock.MagicMock()
 
         # act
+        clean_up_mock = mock.MagicMock()
+        self.connectivity_flow._remove_all_vlan_flow = clean_up_mock
         self.connectivity_flow.apply_connectivity_changes(request=request)
 
         # verify
+        clean_up_mock.assert_called_once_with(port_name=action.actionTarget.fullName)
         thread_class.assert_any_call(
             target=self.connectivity_flow._add_vlan_executor,
             name=action_id,
