@@ -19,10 +19,13 @@ class TestConnectivityRunner(unittest.TestCase):
         self.cli_handler = mock.MagicMock()
 
         class ConnectivityFlow(AbstractConnectivityFlow):
-            def _add_vlan_flow(self):
+            def _add_vlan_flow(self, **kwargs):
                 pass
 
-            def _remove_vlan_flow(self):
+            def _remove_vlan_flow(self, **kwargs):
+                pass
+
+            def _remove_all_vlan_flow(self, **kwargs):
                 pass
 
         self.connectivity_flow = ConnectivityFlow(logger=self.logger)
@@ -35,7 +38,7 @@ class TestConnectivityRunner(unittest.TestCase):
         with self.assertRaisesRegexp(
             TypeError,
             "Can't instantiate abstract class TestedClass with abstract methods "
-            "_add_vlan_flow, _remove_vlan_flow",
+            "_add_vlan_flow, _remove_all_vlan_flow, _remove_vlan_flow",
         ):
 
             class TestedClass(AbstractConnectivityFlow):
@@ -289,7 +292,9 @@ class TestConnectivityRunner(unittest.TestCase):
     ):
         """Check that method will add error response for the failed set_vlan action."""
         action_id = "some action id"
-        self.connectivity_flow.result[action_id] = [(False, "failed action message")]
+        self.connectivity_flow._add_vlan_flow = mock.MagicMock(
+            side_effect=Exception("failed action message")
+        )
         action = mock.MagicMock(type="setVlan", actionId=action_id)
         json_request_deserializer = mock.MagicMock(
             driverRequest=mock.MagicMock(actions=[action])

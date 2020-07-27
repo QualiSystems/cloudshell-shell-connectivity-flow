@@ -21,6 +21,7 @@ class TestJsonRequestDeserializer(TestCase):
         """Check that method will return list of valid VLANs."""
         vlan_str = "10-15,19,21-23"
         # act
+        self.vlan_handler.is_multi_vlan_supported = False
         result = self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
         # verify
         self.assertEqual(set(result), {"21-23", "19", "10-15"})
@@ -31,6 +32,7 @@ class TestJsonRequestDeserializer(TestCase):
         It will create VLANs between the given range and change start/end if needed
         """
         self.vlan_handler.is_vlan_range_supported = False
+        self.vlan_handler.is_multi_vlan_supported = False
         vlan_str = "12-10"
         # act
         result = self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
@@ -43,7 +45,7 @@ class TestJsonRequestDeserializer(TestCase):
         It will create VLANs between the given range and change start/end if needed
         """
         self.vlan_handler.is_vlan_range_supported = False
-        self.vlan_handler.is_multi_vlan_supported = False
+        self.vlan_handler.is_multi_vlan_supported = True
         vlan_str = "12-10"
         # act
         result = self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
