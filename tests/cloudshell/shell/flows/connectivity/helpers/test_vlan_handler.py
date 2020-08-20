@@ -23,7 +23,6 @@ class TestJsonRequestDeserializer(TestCase):
         It will sort list of VLANs (not VLAN Ranges)
         """
         vlan_list = ["5", "33", "11", "2"]
-        # vlan_list = ["5", "11-30", "33", "7"]
         # act
         self.vlan_handler.is_vlan_range_supported = False
         result = self.vlan_handler._sort_vlans(vlan_list=vlan_list)
