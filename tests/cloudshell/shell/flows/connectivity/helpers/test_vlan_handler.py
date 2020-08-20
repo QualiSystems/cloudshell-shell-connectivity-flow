@@ -17,6 +17,31 @@ class TestJsonRequestDeserializer(TestCase):
     def setUp(self):
         self.vlan_handler = VLANHandler()
 
+    def test__sort_vlans_only(self):
+        """Check that method will return list of sorted VLANs.
+
+        It will sort list of VLANs (not VLAN Ranges)
+        """
+        vlan_list = ["5", "33", "11", "2"]
+        # vlan_list = ["5", "11-30", "33", "7"]
+        # act
+        self.vlan_handler.is_vlan_range_supported = False
+        result = self.vlan_handler._sort_vlans(vlan_list=vlan_list)
+        # verify
+        self.assertEqual(set(result), {"2", "5", "11", "33"})
+
+    def test__sort_vlans_with_ranges(self):
+        """Check that method will return list of sorted VLANs.
+
+        It will sort list of VLANs and VLAN Ranges)
+        """
+        vlan_list = ["5", "11-30", "33", "7"]
+        # act
+        self.vlan_handler.is_vlan_range_supported = True
+        result = self.vlan_handler._sort_vlans(vlan_list=vlan_list)
+        # verify
+        self.assertEqual(set(result), {"5", "7", "11-30", "33"})
+
     def test_get_vlan_list(self):
         """Check that method will return list of valid VLANs."""
         vlan_str = "10-15,19,21-23"
@@ -24,7 +49,7 @@ class TestJsonRequestDeserializer(TestCase):
         self.vlan_handler.is_multi_vlan_supported = False
         result = self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
         # verify
-        self.assertEqual(set(result), {"21-23", "19", "10-15"})
+        self.assertEqual(set(result), {"10-15", "19", "21-23"})
 
     def test_get_vlan_list_as_list_vlan_range_range_is_not_supported(self):
         """Check that method will return list with VLANs.
