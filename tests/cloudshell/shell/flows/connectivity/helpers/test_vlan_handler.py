@@ -27,7 +27,7 @@ class TestJsonRequestDeserializer(TestCase):
         self.vlan_handler.is_vlan_range_supported = False
         result = self.vlan_handler._sort_vlans(vlan_list=vlan_list)
         # verify
-        self.assertEqual(set(result), {"2", "5", "11", "33"})
+        self.assertEqual(result, ["2", "5", "11", "33"])
 
     def test__sort_vlans_with_ranges(self):
         """Check that method will return list of sorted VLANs.
@@ -39,7 +39,7 @@ class TestJsonRequestDeserializer(TestCase):
         self.vlan_handler.is_vlan_range_supported = True
         result = self.vlan_handler._sort_vlans(vlan_list=vlan_list)
         # verify
-        self.assertEqual(set(result), {"5", "7", "11-30", "33"})
+        self.assertEqual(result, ["5", "7", "11-30", "33"])
 
     def test_get_vlan_list(self):
         """Check that method will return list of valid VLANs."""
@@ -48,7 +48,7 @@ class TestJsonRequestDeserializer(TestCase):
         self.vlan_handler.is_multi_vlan_supported = False
         result = self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
         # verify
-        self.assertEqual(set(result), {"10-15", "19", "21-23"})
+        self.assertEqual(result, ["10-15", "19", "21-23"])
 
     def test_get_vlan_list_as_list_vlan_range_range_is_not_supported(self):
         """Check that method will return list with VLANs.
@@ -61,7 +61,7 @@ class TestJsonRequestDeserializer(TestCase):
         # act
         result = self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
         # verify
-        self.assertEqual(set(result), {"10", "11", "12"})
+        self.assertEqual(result, ["10", "11", "12"])
 
     def test_get_vlan_list_as_str_vlan_range_range_is_not_supported(self):
         """Check that method will return string with VLANs.
@@ -74,7 +74,7 @@ class TestJsonRequestDeserializer(TestCase):
         # act
         result = self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
         # verify
-        self.assertEqual(set(result), {"10,11,12"})
+        self.assertEqual(result, ["10,11,12"])
 
     def test_get_vlan_list_invalid_vlan_number(self):
         """Check that method will raise Exception if VLAN number is not valid."""

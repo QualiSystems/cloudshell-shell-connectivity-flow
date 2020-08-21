@@ -91,7 +91,7 @@ class VLANHandler:
                         raise VLANHandlerException(
                             "Wrong VLANs range detected {}".format(vlan_str),
                         )
-        vlan_range_list = self._sort_vlans(result)
+        vlan_range_list = self._sort_vlans(map(str, result))
         if self.is_multi_vlan_supported:
             return [",".join(vlan_range_list)]
         else:
