@@ -27,7 +27,9 @@ from cloudshell.shell.flows.connectivity.models.driver_response_root import (
 
 
 class AbstractConnectivityFlow(ConnectivityFlowInterface):
+    # Indicates if VLAN ranges are supported like "120-130"
     IS_VLAN_RANGE_SUPPORTED = True
+    # Indicates if device supports comma separated VLAN request like "45, 65, 120-130"
     IS_MULTI_VLAN_SUPPORTED = True
 
     def __init__(self, logger):
@@ -45,6 +47,11 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
 
     @abstractmethod
     def _remove_vlan_flow(self, vlan_range, port_name, port_mode):
+        """Remove VLAN, has to be implemented."""
+        pass
+
+    @abstractmethod
+    def _remove_all_vlan_flow(self, port_name):
         """Remove VLAN, has to be implemented."""
         pass
 
@@ -96,7 +103,7 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                         qnq = True
                     if attribute.attributeName.lower() == "ctag":
                         ctag = attribute.attributeValue
-
+                self._remove_all_vlan_flow(port_name=full_name)
                 for vlan_id in vlan_handler.get_vlan_list(
                     action.connectionParams.vlanId
                 ):
@@ -189,6 +196,11 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
             )
             self.result[current_thread().name].append((True, action_result))
         except Exception as e:
+            self._logger.error(
+                "Failed to configure vlan {} for interface {}".format(
+                    vlan_id, full_name
+                )
+            )
             self._logger.error(traceback.format_exc())
             self.result[current_thread().name].append((False, str(e)))
 
