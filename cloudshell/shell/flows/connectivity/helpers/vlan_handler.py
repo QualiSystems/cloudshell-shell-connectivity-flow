@@ -29,6 +29,31 @@ class VLANHandler:
                 return False
         return True
 
+    def _sort_vlans(self, vlan_list):
+        """Sort VLAN list.
+
+        :param vlan_list:
+        :return list of sorted VLANs/VLAN Ranges or Exception
+        """
+        if not self.is_vlan_range_supported:
+            return sorted(vlan_list, key=int)
+        else:
+            temp = []
+            for vlan in vlan_list:
+                if "-" in str(vlan):
+                    temp.append(tuple(map(int, vlan.split("-"))))
+                else:
+                    temp.append((int(vlan), int(vlan)))
+
+            res = []
+            for vlan in sorted(temp):
+                if vlan[0] == vlan[1]:
+                    res.append(str(vlan[0]))
+                else:
+                    res.append("{}-{}".format(vlan[0], vlan[1]))
+
+            return res
+
     def get_vlan_list(self, vlan_str):
         """Get VLAN list from input string.
 
@@ -66,8 +91,7 @@ class VLANHandler:
                         raise VLANHandlerException(
                             "Wrong VLANs range detected {}".format(vlan_str),
                         )
-        vlan_range_list = list(map(str, result))
-        sorted(vlan_range_list)
+        vlan_range_list = self._sort_vlans(map(str, result))
         if self.is_multi_vlan_supported:
             return [",".join(vlan_range_list)]
         else:
