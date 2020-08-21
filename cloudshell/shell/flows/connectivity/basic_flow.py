@@ -27,7 +27,7 @@ from cloudshell.shell.flows.connectivity.models.driver_response_root import (
 
 
 class AbstractConnectivityFlow(ConnectivityFlowInterface):
-    # Indicates if VLAN ranges are supported like "45, 65, 120-130"
+    # Indicates if VLAN ranges are supported like "120-130"
     IS_VLAN_RANGE_SUPPORTED = True
     # Indicates if device supports comma separated VLAN request like "45, 65, 120-130"
     IS_MULTI_VLAN_SUPPORTED = True
