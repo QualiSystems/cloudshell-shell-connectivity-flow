@@ -36,7 +36,7 @@ class VLANHandler:
         :return list of sorted VLANs/VLAN Ranges or Exception
         """
         if not self.is_vlan_range_supported:
-            return list(map(str, sorted(map(int, vlan_list))))
+            return sorted(vlan_list, key=int)
         else:
             temp = []
             for vlan in vlan_list:
