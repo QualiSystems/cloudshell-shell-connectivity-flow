@@ -84,7 +84,7 @@ class TestJsonRequestDeserializer(TestCase):
         # act # verify
         with self.assertRaisesRegexp(
             VLANHandlerException,
-            "Wrong VLAN number detected {vlan_str}".format(vlan_str=vlan_str),
+            "Wrong VLAN detected {vlan_str}".format(vlan_str=vlan_str),
         ):
             self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
 
@@ -94,10 +94,7 @@ class TestJsonRequestDeserializer(TestCase):
         self.vlan_handler.validate_vlan_range = mock.MagicMock(return_value=False)
         vlan_str = "5000-5005"
         # act # verify
-        with self.assertRaisesRegexp(
-            VLANHandlerException,
-            "Wrong VLANs range detected {vlan_str}".format(vlan_str=vlan_str),
-        ):
+        with self.assertRaisesRegexp(VLANHandlerException, "Wrong VLAN detected 5000"):
             self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
 
     def test_get_vlan_list_invalid_vlan_range_range_is_not_supported(self):
@@ -106,8 +103,5 @@ class TestJsonRequestDeserializer(TestCase):
         self.vlan_handler.validate_vlan_number = mock.MagicMock(return_value=False)
         vlan_str = "5000-5005"
         # act
-        with self.assertRaisesRegexp(
-            VLANHandlerException,
-            "Wrong VLANs range detected {vlan_str}".format(vlan_str=vlan_str),
-        ):
+        with self.assertRaisesRegexp(VLANHandlerException, "Wrong VLAN detected 5000"):
             self.vlan_handler.get_vlan_list(vlan_str=vlan_str)
