@@ -83,6 +83,7 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
             is_vlan_range_supported=self.IS_VLAN_RANGE_SUPPORTED,
             is_multi_vlan_supported=self.IS_MULTI_VLAN_SUPPORTED,
         )
+        remove_all_vlan_args = set()
 
         for action in holder.driverRequest.actions:
             self._logger.info("Action: ", action.__dict__)
@@ -103,7 +104,7 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                         qnq = True
                     if attribute.attributeName.lower() == "ctag":
                         ctag = attribute.attributeValue
-                self._remove_all_vlan_flow(port_name=full_name)
+                remove_all_vlan_args.add((full_name,))
                 for vlan_id in vlan_handler.get_vlan_list(
                     action.connectionParams.vlanId
                 ):
@@ -130,6 +131,9 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                     )
                 )
                 continue
+
+        for args in remove_all_vlan_args:
+            self._remove_all_vlan_flow(*args)
 
         # Start all created remove_vlan_threads
         for thread in remove_vlan_thread_list:

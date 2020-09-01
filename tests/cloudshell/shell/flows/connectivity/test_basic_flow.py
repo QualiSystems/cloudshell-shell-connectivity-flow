@@ -19,13 +19,13 @@ class TestConnectivityRunner(unittest.TestCase):
         self.cli_handler = mock.MagicMock()
 
         class ConnectivityFlow(AbstractConnectivityFlow):
-            def _add_vlan_flow(self, **kwargs):
+            def _add_vlan_flow(self, *args, **kwargs):
                 pass
 
-            def _remove_vlan_flow(self, **kwargs):
+            def _remove_vlan_flow(self, *args, **kwargs):
                 pass
 
-            def _remove_all_vlan_flow(self, **kwargs):
+            def _remove_all_vlan_flow(self, *args, **kwargs):
                 pass
 
         self.connectivity_flow = ConnectivityFlow(logger=self.logger)
@@ -260,7 +260,7 @@ class TestConnectivityRunner(unittest.TestCase):
         self.connectivity_flow.apply_connectivity_changes(request=request)
 
         # verify
-        clean_up_mock.assert_called_once_with(port_name=action.actionTarget.fullName)
+        clean_up_mock.assert_called_once_with(action.actionTarget.fullName)
         thread_class.assert_any_call(
             target=self.connectivity_flow._add_vlan_executor,
             name=action_id,
