@@ -75,7 +75,7 @@ class TestConnectivityRunner(unittest.TestCase):
         self.connectivity_flow._add_vlan_flow.assert_called_once_with(
             vlan_range=vlan_id,
             port_mode=port_mode,
-            port_name=full_name,
+            full_name=full_name,
             qnq=qnq,
             c_tag=c_tag,
             vm_uid=vm_uid,
@@ -114,7 +114,7 @@ class TestConnectivityRunner(unittest.TestCase):
         self.connectivity_flow._add_vlan_flow.assert_called_once_with(
             vlan_range=vlan_id,
             port_mode=port_mode,
-            port_name=full_name,
+            full_name=full_name,
             qnq=qnq,
             c_tag=c_tag,
             vm_uid=vm_uid,
@@ -141,7 +141,7 @@ class TestConnectivityRunner(unittest.TestCase):
         )
         # verify
         self.connectivity_flow._remove_vlan_flow.assert_called_once_with(
-            vlan_range=vlan_id, port_mode=port_mode, port_name=full_name, vm_uid=vm_uid
+            vlan_range=vlan_id, port_mode=port_mode, full_name=full_name, vm_uid=vm_uid
         )
 
         self.assertEqual(self.connectivity_flow.result, expected_res)
@@ -168,7 +168,7 @@ class TestConnectivityRunner(unittest.TestCase):
         )
         # verify
         self.connectivity_flow._remove_vlan_flow.assert_called_once_with(
-            vlan_range=vlan_id, port_mode=port_mode, port_name=full_name, vm_uid=vm_uid
+            vlan_range=vlan_id, port_mode=port_mode, full_name=full_name, vm_uid=vm_uid
         )
 
         self.assertEqual(self.connectivity_flow.result, expected_res)

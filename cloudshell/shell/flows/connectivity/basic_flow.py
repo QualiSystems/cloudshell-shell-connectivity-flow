@@ -42,17 +42,17 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
         self.result = defaultdict(list)
 
     @abstractmethod
-    def _add_vlan_flow(self, vlan_range, port_mode, port_name, qnq, c_tag, vm_uid):
+    def _add_vlan_flow(self, vlan_range, port_mode, full_name, qnq, c_tag, vm_uid):
         """Add VLAN, has to be implemented."""
         pass
 
     @abstractmethod
-    def _remove_vlan_flow(self, vlan_range, port_name, port_mode, vm_uid):
+    def _remove_vlan_flow(self, vlan_range, full_name, port_mode, vm_uid):
         """Remove VLAN, has to be implemented."""
         pass
 
     @abstractmethod
-    def _remove_all_vlan_flow(self, port_name, vm_uid):
+    def _remove_all_vlan_flow(self, full_name, vm_uid):
         """Remove VLAN, has to be implemented."""
         pass
 
@@ -192,18 +192,19 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
             action_result = self._add_vlan_flow(
                 vlan_range=vlan_id,
                 port_mode=port_mode,
-                port_name=full_name,
+                full_name=full_name,
                 qnq=qnq,
                 c_tag=c_tag,
                 vm_uid=vm_uid,
             )
             self.result[current_thread().name].append((True, action_result))
         except Exception as e:
-            self._logger.error(
-                "Failed to configure vlan {} for interface {}".format(
-                    vlan_id, full_name
-                )
+            emsg = "Failed to configure vlan {} for interface {}".format(
+                vlan_id, full_name
             )
+            if vm_uid is not None:
+                emsg += " on VM id {}".format(vm_uid)
+            self._logger.error(emsg)
             self._logger.error(traceback.format_exc())
             self.result[current_thread().name].append((False, str(e)))
 
@@ -218,7 +219,7 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
 
             action_result = self._remove_vlan_flow(
                 vlan_range=vlan_id,
-                port_name=full_name,
+                full_name=full_name,
                 port_mode=port_mode,
                 vm_uid=vm_uid,
             )
