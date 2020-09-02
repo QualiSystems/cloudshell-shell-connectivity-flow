@@ -42,17 +42,17 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
         self.result = defaultdict(list)
 
     @abstractmethod
-    def _add_vlan_flow(self, vlan_range, port_mode, port_name, qnq, c_tag, vm_uid=None):
+    def _add_vlan_flow(self, vlan_range, port_mode, port_name, qnq, c_tag, vm_uid):
         """Add VLAN, has to be implemented."""
         pass
 
     @abstractmethod
-    def _remove_vlan_flow(self, vlan_range, port_name, port_mode, vm_uid=None):
+    def _remove_vlan_flow(self, vlan_range, port_name, port_mode, vm_uid):
         """Remove VLAN, has to be implemented."""
         pass
 
     @abstractmethod
-    def _remove_all_vlan_flow(self, port_name, vm_uid=None):
+    def _remove_all_vlan_flow(self, port_name, vm_uid):
         """Remove VLAN, has to be implemented."""
         pass
 
