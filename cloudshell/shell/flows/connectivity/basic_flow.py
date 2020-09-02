@@ -78,12 +78,12 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
         driver_response = DriverResponse()
         add_vlan_thread_list = []
         remove_vlan_thread_list = []
+        remove_all_vlan_args = set()
         driver_response_root = DriverResponseRoot()
         vlan_handler = VLANHandler(
             is_vlan_range_supported=self.IS_VLAN_RANGE_SUPPORTED,
             is_multi_vlan_supported=self.IS_MULTI_VLAN_SUPPORTED,
         )
-        remove_all_vlan_args = set()
 
         for action in holder.driverRequest.actions:
             self._logger.info("Action: ", action.__dict__)
@@ -132,8 +132,7 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
                 )
                 continue
 
-        for args in remove_all_vlan_args:
-            self._remove_all_vlan_flow(*args)
+        self._remove_all_vlan_in_threads(remove_all_vlan_args)
 
         # Start all created remove_vlan_threads
         for thread in remove_vlan_thread_list:
@@ -224,3 +223,12 @@ class AbstractConnectivityFlow(ConnectivityFlowInterface):
         except Exception as e:
             self._logger.error(traceback.format_exc())
             self.result[current_thread().name].append((False, str(e)))
+
+    def _remove_all_vlan_in_threads(self, vlan_args):
+        threads = [
+            Thread(target=self._remove_all_vlan_flow, args=args) for args in vlan_args
+        ]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
