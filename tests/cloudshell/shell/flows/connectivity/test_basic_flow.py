@@ -6,6 +6,7 @@ import unittest
 from collections import defaultdict
 
 from cloudshell.shell.flows.connectivity.basic_flow import AbstractConnectivityFlow
+from cloudshell.shell.flows.connectivity.utils import get_vm_uid
 
 if sys.version_info >= (3, 0):
     from unittest import mock
@@ -54,6 +55,7 @@ class TestConnectivityRunner(unittest.TestCase):
         port_mode = "port mode"
         qnq = mock.MagicMock()
         c_tag = mock.MagicMock()
+        vm_uid = mock.MagicMock()
         expected_res = defaultdict(list)
         action_result = mock.MagicMock()
         expected_res[current_thread().name] = [(True, action_result)]
@@ -67,14 +69,16 @@ class TestConnectivityRunner(unittest.TestCase):
             port_mode=port_mode,
             qnq=qnq,
             c_tag=c_tag,
+            vm_uid=vm_uid,
         )
         # verify
         self.connectivity_flow._add_vlan_flow.assert_called_once_with(
             vlan_range=vlan_id,
             port_mode=port_mode,
-            port_name=full_name,
+            full_name=full_name,
             qnq=qnq,
             c_tag=c_tag,
+            vm_uid=vm_uid,
         )
 
         self.assertEqual(self.connectivity_flow.result, expected_res)
@@ -90,6 +94,7 @@ class TestConnectivityRunner(unittest.TestCase):
         port_mode = "port mode"
         qnq = mock.MagicMock()
         c_tag = mock.MagicMock()
+        vm_uid = mock.MagicMock()
         expected_res = defaultdict(list)
         error_msg = "some exception message"
         expected_res[current_thread().name] = [(False, error_msg)]
@@ -103,14 +108,16 @@ class TestConnectivityRunner(unittest.TestCase):
             port_mode=port_mode,
             qnq=qnq,
             c_tag=c_tag,
+            vm_uid=vm_uid,
         )
         # verify
         self.connectivity_flow._add_vlan_flow.assert_called_once_with(
             vlan_range=vlan_id,
             port_mode=port_mode,
-            port_name=full_name,
+            full_name=full_name,
             qnq=qnq,
             c_tag=c_tag,
+            vm_uid=vm_uid,
         )
 
         self.assertEqual(self.connectivity_flow.result, expected_res)
@@ -121,6 +128,7 @@ class TestConnectivityRunner(unittest.TestCase):
         vlan_id = "some vlan id"
         full_name = "some full name"
         port_mode = "port mode"
+        vm_uid = "vm_uid"
         expected_res = defaultdict(list)
         action_result = mock.MagicMock()
         expected_res[current_thread().name] = [(True, action_result)]
@@ -129,11 +137,11 @@ class TestConnectivityRunner(unittest.TestCase):
         )
         # act
         self.connectivity_flow._remove_vlan_executor(
-            vlan_id=vlan_id, full_name=full_name, port_mode=port_mode
+            vlan_id=vlan_id, full_name=full_name, port_mode=port_mode, vm_uid=vm_uid
         )
         # verify
         self.connectivity_flow._remove_vlan_flow.assert_called_once_with(
-            vlan_range=vlan_id, port_mode=port_mode, port_name=full_name
+            vlan_range=vlan_id, port_mode=port_mode, full_name=full_name, vm_uid=vm_uid
         )
 
         self.assertEqual(self.connectivity_flow.result, expected_res)
@@ -147,6 +155,7 @@ class TestConnectivityRunner(unittest.TestCase):
         vlan_id = "some vlan id"
         full_name = "some full name"
         port_mode = "port mode"
+        vm_uid = "vm_uid"
         expected_res = defaultdict(list)
         error_msg = "some exception message"
         expected_res[current_thread().name] = [(False, error_msg)]
@@ -155,11 +164,11 @@ class TestConnectivityRunner(unittest.TestCase):
         )
         # act
         self.connectivity_flow._remove_vlan_executor(
-            vlan_id=vlan_id, full_name=full_name, port_mode=port_mode
+            vlan_id=vlan_id, full_name=full_name, port_mode=port_mode, vm_uid=vm_uid
         )
         # verify
         self.connectivity_flow._remove_vlan_flow.assert_called_once_with(
-            vlan_range=vlan_id, port_mode=port_mode, port_name=full_name
+            vlan_range=vlan_id, port_mode=port_mode, full_name=full_name, vm_uid=vm_uid
         )
 
         self.assertEqual(self.connectivity_flow.result, expected_res)
@@ -234,6 +243,7 @@ class TestConnectivityRunner(unittest.TestCase):
         vlan_id = "test vlan id"
         qnq = True
         ctag = "ctag value"
+        vm_uid = "vm_uid"
         self.connectivity_flow.result[action_id] = [(True, "success action message")]
         get_vlan_list.return_value = [vlan_id]
         action = mock.MagicMock(
@@ -245,6 +255,9 @@ class TestConnectivityRunner(unittest.TestCase):
                     mock.MagicMock(attributeName="CTAG", attributeValue=ctag),
                 ]
             ),
+            customActionAttributes=[
+                mock.MagicMock(attributeName="VM_UUID", attributeValue=vm_uid)
+            ],
         )
 
         json_request_deserializer = mock.MagicMock(
@@ -261,7 +274,7 @@ class TestConnectivityRunner(unittest.TestCase):
 
         # verify
         thread_class.assert_any_call(
-            target=clean_up_mock, args=(action.actionTarget.fullName,)
+            target=clean_up_mock, args=(action.actionTarget.fullName, vm_uid)
         )
         thread_class.assert_any_call(
             target=self.connectivity_flow._add_vlan_executor,
@@ -272,6 +285,7 @@ class TestConnectivityRunner(unittest.TestCase):
                 action.connectionParams.mode.lower(),
                 qnq,
                 ctag,
+                vm_uid,
             ),
         )
 
@@ -345,6 +359,7 @@ class TestConnectivityRunner(unittest.TestCase):
         get_vlan_list.return_value = [vlan_id]
 
         action = mock.MagicMock(type="removeVlan", actionId=action_id)
+        vm_uid = get_vm_uid(action)
 
         json_request_deserializer = mock.MagicMock(
             driverRequest=mock.MagicMock(actions=[action])
@@ -363,6 +378,7 @@ class TestConnectivityRunner(unittest.TestCase):
                 vlan_id,
                 action.actionTarget.fullName,
                 action.connectionParams.mode.lower(),
+                vm_uid,
             ),
         )
 

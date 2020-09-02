@@ -24,3 +24,11 @@ class JsonRequestDeserializer(object):
     def _is_primitive(thing):
         primitive = (int, (type(""), type(u"")), bool, float)
         return isinstance(thing, primitive)
+
+
+def _list_attrs_to_dict(list_attrs):
+    return {attr.attributeName: attr.attributeValue for attr in list_attrs}
+
+
+def get_vm_uid(action):
+    return _list_attrs_to_dict(action.customActionAttributes).get("VM_UUID", "")
