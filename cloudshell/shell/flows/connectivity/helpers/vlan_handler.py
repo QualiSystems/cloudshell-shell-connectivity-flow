@@ -15,7 +15,7 @@ class VLANHandler:
             number = int(number)
         except ValueError:
             raise VLANHandlerException("VLAN {} isn't a integer".format(number))
-        if number > 4000 or number < 1:
+        if number > 4094 or number < 1:
             raise VLANHandlerException("Wrong VLAN detected {}".format(number))
 
     def _validate_vlan_range(self, vlan_range):
