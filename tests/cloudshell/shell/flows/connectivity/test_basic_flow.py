@@ -273,7 +273,9 @@ class TestConnectivityRunner(unittest.TestCase):
         self.connectivity_flow.apply_connectivity_changes(request=request)
 
         # verify
-        clean_up_mock.assert_called_once_with(action.actionTarget.fullName, vm_uid)
+        thread_class.assert_any_call(
+            target=clean_up_mock, args=(action.actionTarget.fullName, vm_uid)
+        )
         thread_class.assert_any_call(
             target=self.connectivity_flow._add_vlan_executor,
             name=action_id,
