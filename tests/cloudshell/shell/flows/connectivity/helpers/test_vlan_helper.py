@@ -1,7 +1,6 @@
 import pytest
 
 from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
-
 from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
     _sort_vlans,
     get_vlan_list,

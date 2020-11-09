@@ -21,7 +21,7 @@ def _validate_vlan_range(vlan_range):
 
 
 def _sort_vlans(vlans: Iterable[str]) -> list[str]:
-    return sorted(vlans, key=lambda v: tuple(map(int, v.split('-'))))
+    return sorted(vlans, key=lambda v: tuple(map(int, v.split("-"))))
 
 
 def get_vlan_list(
@@ -43,3 +43,14 @@ def get_vlan_list(
         return [",".join(_sort_vlans(result))]
     else:
         return _sort_vlans(result)
+
+
+def iterate_dict_actions_by_vlan_range(
+    dict_action: dict, is_vlan_range_supported: bool, is_multi_vlan_supported: bool
+):
+    vlan_str = dict_action["connectionParams"]["vlanId"]
+    for vlan in get_vlan_list(
+        vlan_str, is_vlan_range_supported, is_multi_vlan_supported
+    ):
+        dict_action["connectionParams"]["vlanId"] = vlan
+        yield dict_action
