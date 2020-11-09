@@ -15,11 +15,11 @@ class ConnectivityActionResult(BaseModel):
 
     @staticmethod
     def _action_dict(action: ConnectivityActionModel):
-        return dict(
-            actionId=action.action_id,
-            type=action.type.value,
-            updateInterface=action.action_target.name,
-        )
+        return {
+            "actionId": action.action_id,
+            "type": action.type.value,
+            "updateInterface": action.action_target.name,
+        }
 
     @classmethod
     def success_result(cls, action: ConnectivityActionModel, msg: str):

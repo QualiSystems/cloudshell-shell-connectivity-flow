@@ -1,7 +1,14 @@
-from enum import Enum
-from typing import Dict, List, Optional
+from __future__ import annotations
 
-from pydantic import BaseModel, Field, root_validator
+import json
+from enum import Enum
+from itertools import chain
+
+from pydantic import BaseModel, Field, validator
+
+from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
+    iterate_dict_actions_by_vlan_range,
+)
 
 
 class ConnectivityTypeEnum(Enum):
@@ -14,27 +21,29 @@ class ConnectionModeEnum(Enum):
     TRUNK = "Trunk"
 
 
-def _list_attrs_to_dict(list_attrs: List[Dict[str, str]]) -> Dict[str, str]:
+def list_attrs_to_dict(list_attrs: list[dict[str, str]]) -> dict[str, str]:
     return {attr["attributeName"]: attr["attributeValue"] for attr in list_attrs}
+
+
+class VlanServiceModel(BaseModel):
+    qnq: bool = Field(..., alias="QnQ")
+    ctag: str = Field(..., alias="CTag")
 
 
 class ConnectionParamsModel(BaseModel):
     vlan_id: int = Field(..., alias="vlanId")
     mode: ConnectionModeEnum
-    vlan_service_attrs: Dict[str, str] = Field(..., alias="vlanServiceAttributes")
-    qnq: bool
-    ctag: str
     type: str  # noqa: A003
+    vlan_service_attrs: VlanServiceModel = Field(..., alias="vlanServiceAttributes")
 
-    @root_validator(pre=True)
-    def _set_qnq_and_ctag_and_vlan_attrs(cls, values):
-        vlan_service_attrs = _list_attrs_to_dict(values["vlanServiceAttributes"])
-        qnq = vlan_service_attrs["QnQ"]
-        ctag = vlan_service_attrs["CTag"]
-        values.update(
-            {"qnq": qnq, "ctag": ctag, "vlanServiceAttributes": vlan_service_attrs}
-        )
-        return values
+    # validators
+    _list_attrs_to_dict = validator("vlan_service_attrs", allow_reuse=True, pre=True)(
+        list_attrs_to_dict
+    )
+
+
+class ConnectorAttributesModel(BaseModel):
+    interface: str = Field("", alias="Interface")
 
 
 class ActionTargetModel(BaseModel):
@@ -42,26 +51,38 @@ class ActionTargetModel(BaseModel):
     address: str = Field(..., alias="fullAddress")
 
 
+class CustomActionAttrsModel(BaseModel):
+    vm_uuid: str = Field("", alias="VM_UUID")
+    vnic: str = Field("", alias="Vnic Name")
+
+
 class ConnectivityActionModel(BaseModel):
     connection_id: str = Field(..., alias="connectionId")
     connection_params: ConnectionParamsModel = Field(..., alias="connectionParams")
-    connector_attrs: Dict[str, str] = Field({}, alias="connectorAttributes")
+    connector_attrs: ConnectorAttributesModel = Field(..., alias="connectorAttributes")
     action_target: ActionTargetModel = Field(..., alias="actionTarget")
-    custom_action_attrs: Dict[str, str] = Field(..., alias="customActionAttributes")
+    custom_action_attrs: CustomActionAttrsModel = Field(
+        ..., alias="customActionAttributes"
+    )
     action_id: str = Field(..., alias="actionId")
     type: ConnectivityTypeEnum  # noqa: A003
-    vm_uid: Optional[str]
 
-    @root_validator(pre=True)
-    def _set_connection_and_custom_actions_attrs(cls, values):
-        connector_attrs = _list_attrs_to_dict(values["connectorAttributes"])
-        custom_action_attrs = _list_attrs_to_dict(values["customActionAttributes"])
-        vm_uid = custom_action_attrs.get("VM_UUID")
-        values.update(
-            {
-                "connectorAttributes": connector_attrs,
-                "customActionAttributes": custom_action_attrs,
-                "vm_uid": vm_uid,
-            }
-        )
-        return values
+    # validators
+    _list_attrs_to_dict = validator(
+        "connector_attrs", "custom_action_attrs", allow_reuse=True, pre=True
+    )(list_attrs_to_dict)
+
+
+def get_actions_from_request(
+    request: str,
+    model: type[ConnectivityActionModel],
+    # Indicates if VLAN ranges are supported like "120-130"
+    is_vlan_rage_supported=True,
+    # Indicates if device supports comma separated VLAN request like "45, 65, 120-130"
+    is_multi_vlan_supported=True,
+) -> list[ConnectivityActionModel]:
+    dict_actions = json.loads(request)["driverRequest"]["actions"]
+    return [
+        model.parse_obj(da)
+        for da in chain(*map(iterate_dict_actions_by_vlan_range, dict_actions))
+    ]
