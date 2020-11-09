@@ -1,14 +1,12 @@
-import json
 from abc import abstractmethod
 from collections import defaultdict
+from concurrent import futures as ft
+from itertools import groupby
 from logging import Logger
-from threading import Thread
-from typing import List, Optional
 
-from cloudshell.shell.flows.connectivity.helpers.vlan_handler import VLANHandler
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
-    ConnectionModeEnum,
     ConnectivityActionModel,
+    get_actions_from_request,
 )
 from cloudshell.shell.flows.connectivity.models.driver_response import (
     ConnectivityActionResult,
@@ -25,137 +23,98 @@ class AbstractConnectivityFlow:
 
     def __init__(self, logger: Logger):
         self._logger = logger
-        self._set_vlan_threads: List[Thread] = []
-        self._remove_vlan_threads: List[Thread] = []
         self._success_msgs = defaultdict(list)  # action_id: [msg]
         self._error_msgs = defaultdict(list)  # action_id: [msg]
-        self._vlan_helper = VLANHandler(
-            self.IS_VLAN_RANGE_SUPPORTED, self.IS_MULTI_VLAN_SUPPORTED
-        )
-        self._remove_all_vlans_set = set()  # {(target_name, vm_uid)}
-
-    def _get_actions(self, requests: str) -> List[ConnectivityActionModel]:
-        dict_actions = json.loads(requests)["driverRequest"]["actions"]
-        return [self.MODEL.parse_obj(action) for action in dict_actions]
 
     @abstractmethod
-    def _set_vlan(
-        self,
-        vlan: str,
-        port_mode: ConnectionModeEnum,
-        target_name: str,
-        qnq: bool,
-        ctag: str,
-        vm_uid: Optional[str],
-    ) -> str:
+    def _set_vlan(self, action: MODEL) -> str:
         pass
 
     @abstractmethod
-    def _remove_vlan(
-        self,
-        vlan: str,
-        port_mode: ConnectionModeEnum,
-        target_name: str,
-        qnq: bool,
-        ctag: str,
-        vm_uid: Optional[str],
-    ) -> str:
+    def _remove_vlan(self, action: MODEL) -> str:
         pass
 
     @abstractmethod
-    def _remove_all_vlans(self, target_name: str, vm_uid: Optional[str] = None):
+    def _remove_all_vlans(self, action: MODEL) -> str:
         pass
 
-    def _add_set_vlan_thread(self, vlan: str, action: ConnectivityActionModel):
-        t = Thread(target=self._set_vlan_executor, args=(vlan, action))
-        self._set_vlan_threads.append(t)
-
-    def _set_vlan_executor(self, vlan: str, action: ConnectivityActionModel):
-        target_name = action.action_target.name
-        self._remove_all_vlans_set.add((target_name, action.vm_uid))
-        try:
-            msg = self._set_vlan(
-                vlan,
-                action.connection_params.mode,
-                target_name,
-                action.connection_params.qnq,
-                action.connection_params.ctag,
-                action.vm_uid,
-            )
-            self._success_msgs[action.action_id].append(msg)
-        except Exception as e:
-            emsg = f"Failed to configure vlan {vlan} for target {target_name}"
-            if action.vm_uid is not None:
-                emsg = f"{emsg} on VM ID {action.vm_uid}"
-            self._logger.exception(emsg)
-            self._error_msgs[action.action_id].append(str(e))
-
-    def _add_remove_vlan_thread(self, vlan: str, action: ConnectivityActionModel):
-        t = Thread(target=self._remove_vlan_executor, args=(vlan, action))
-        self._remove_vlan_threads.append(t)
-
-    def _remove_vlan_executor(self, vlan: str, action: ConnectivityActionModel):
-        target_name = action.action_target.name
-        try:
-            msg = self._remove_vlan(
-                vlan,
-                action.connection_params.mode,
-                target_name,
-                action.connection_params.qnq,
-                action.connection_params.ctag,
-                action.vm_uid,
-            )
-            self._success_msgs[action.action_id].append(msg)
-        except Exception as e:
-            emsg = f"Failed to configure vlan {vlan} for target {target_name}"
-            if action.vm_uid is not None:
-                emsg = f"{emsg} on VM ID {action.vm_uid}"
-            self._logger.exception(emsg)
-            self._error_msgs[action.action_id].append(str(e))
-
-    def _get_result(self, actions: List[ConnectivityActionModel]) -> str:
+    def _get_result(self, actions: list[MODEL]) -> str:
         action_results = []
         for action in actions:
             err_msgs = self._error_msgs.get(action.action_id)
+            vlan = action.connection_params.vlan_id
             if err_msgs:
                 err_msgs = "\n\t".join(self._error_msgs[action.action_id])
                 msg = (
-                    f"Add Vlan {action.connection_params.vlan_id} configuration failed."
-                    f"\nAdd Vlan configuration details:\n{err_msgs}"
+                    f"Vlan {vlan} configuration failed.\n"
+                    f"Vlan configuration details:\n{err_msgs}"
                 )
                 result = ConnectivityActionResult.fail_result(action, msg)
             else:
-                msg = (
-                    f"Add Vlan {action.connection_params.vlan_id} configuration "
-                    f"successfully completed"
-                )
+                msg = f"Vlan {vlan} configuration " f"successfully completed"
                 result = ConnectivityActionResult.success_result(action, msg)
             action_results.append(result)
 
         return DriverResponseRoot.prepare_response(action_results).json()
 
-    def apply_connectivity(self, requests: str) -> str:
-        actions = self._get_actions(requests)
-        for action in actions:
-            # todo move vlan validation and parsing into model
-            for vlan in self._vlan_helper.get_vlan_list(
-                action.connection_params.vlan_id
-            ):
-                if action.type is action.type.SET_VLAN:
-                    self._add_set_vlan_thread(vlan, action)
-                else:
-                    self._add_remove_vlan_thread(vlan, action)
+    def _group_actions(self, actions: list[MODEL]) -> list["MODEL"]:
+        def key_fn(action):
+            return (
+                action.action_target.name,
+                action.custom_action_attrs.vm_uuid,
+                action.custom_action_attrs.vnic,
+            )
 
-        for target_name, vm_uid in self._remove_all_vlans_set:
-            self._remove_all_vlans(target_name, vm_uid)
-        start_and_wait_threads(self._remove_vlan_threads)
-        start_and_wait_threads(self._set_vlan_threads)
+        return [
+            next(grouped_actions)
+            for _, grouped_actions in groupby(sorted(actions, key=key_fn), key=key_fn)
+        ]
+
+    def _wait_futures(self, futures: dict[MODEL, ft.Future]):
+        ft.wait(futures.values())
+        for action, future in futures.items():
+            try:
+                msg = future.result()
+            except Exception as e:
+                vlan = action.connection_params.vlan_id
+                target_name = action.action_target.name
+                emsg = f"Failed to apply VLAN changes ({vlan}) for target {target_name}"
+                if action.custom_action_attrs.vm_uuid:
+                    emsg += f" on VM ID {action.custom_action_attrs.vm_uuid}"
+                    if action.custom_action_attrs.vnic:
+                        emsg += f" for vNIC {action.custom_action_attrs.vnic}"
+                self._logger.exception(emsg)
+                self._error_msgs[action.action_id].append(str(e))
+            else:
+                self._success_msgs[action.action_id].append(msg)
+
+    def apply_connectivity(self, request: str) -> str:
+        actions = get_actions_from_request(
+            request,
+            self.MODEL,
+            self.IS_VLAN_RANGE_SUPPORTED,
+            self.IS_MULTI_VLAN_SUPPORTED,
+        )
+        set_actions = list(filter(lambda a: a.type is a.type.SET_VLAN, actions))
+        remove_actions = list(filter(lambda a: a.type is a.type.REMOVE_VLAN, actions))
+
+        with ft.ThreadPoolExecutor() as executor:
+            remove_all_vlan_futures = {
+                action: executor.submit(self._remove_all_vlans, action)
+                for action in self._group_actions(set_actions)
+            }
+            self._wait_futures(remove_all_vlan_futures)
+
+            remove_vlan_futures = {
+                action: executor.submit(self._remove_vlan, action)
+                for action in remove_actions
+            }
+            self._wait_futures(remove_vlan_futures)
+
+            set_vlan_futures = {
+                action: executor.submit(self._set_vlan, action)
+                for action in set_actions
+            }
+            self._wait_futures(set_vlan_futures)
 
         return self._get_result(actions)
-
-
-def start_and_wait_threads(threads: List[Thread]):
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
