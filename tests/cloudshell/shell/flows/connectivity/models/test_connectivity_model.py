@@ -5,65 +5,13 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     get_actions_from_request,
 )
 
-ACTION_REQUEST = {
-    "connectionId": "96582265-2728-43aa-bc97-cefb2457ca44",
-    "connectionParams": {
-        "vlanId": "10-11",
-        "mode": "Access",
-        "vlanServiceAttributes": [
-            {
-                "attributeName": "QnQ",
-                "attributeValue": "False",
-                "type": "vlanServiceAttribute",
-            },
-            {
-                "attributeName": "CTag",
-                "attributeValue": "",
-                "type": "vlanServiceAttribute",
-            },
-        ],
-        "type": "setVlanParameter",
-    },
-    "connectorAttributes": [
-        {
-            "attributeName": "Selected Network",
-            "attributeValue": "2",
-            "type": "connectorAttribute",
-        },
-        {
-            "attributeName": "Interface",
-            "attributeValue": "mac address",
-            "type": "connectorAttribute",
-        },
-    ],
-    "actionTarget": {
-        "fullName": "centos",
-        "fullAddress": "full address",
-        "type": "actionTarget",
-    },
-    "customActionAttributes": [
-        {
-            "attributeName": "VM_UUID",
-            "attributeValue": "vm_uid",
-            "type": "customAttribute",
-        },
-        {
-            "attributeName": "Vnic Name",
-            "attributeValue": "vnic",
-            "type": "customAttribute",
-        },
-    ],
-    "actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495",
-    "type": "removeVlan",
-}
 
-
-def test_connectivity_action_model():
-    action = ConnectivityActionModel.parse_obj(ACTION_REQUEST)
-    assert action.action_id == ACTION_REQUEST["actionId"]
+def test_connectivity_action_model(action_request):
+    action = ConnectivityActionModel.parse_obj(action_request)
+    assert action.action_id == action_request["actionId"]
     assert action.type is action.type.REMOVE_VLAN
     assert action.type.value == "removeVlan"
-    assert action.connection_id == ACTION_REQUEST["connectionId"]
+    assert action.connection_id == action_request["connectionId"]
     assert action.connection_params.vlan_id == "10-11"
     assert action.connection_params.mode is action.connection_params.mode.ACCESS
     assert action.connection_params.mode.value == "Access"
@@ -76,10 +24,9 @@ def test_connectivity_action_model():
     assert action.custom_action_attrs.vnic == "vnic"
 
 
-def test_get_actions_from_request():
-    request = {"driverRequest": {"actions": [ACTION_REQUEST]}}
+def test_get_actions_from_request(driver_request):
     actions = get_actions_from_request(
-        json.dumps(request),
+        json.dumps(driver_request),
         ConnectivityActionModel,
         is_vlan_range_supported=False,
         is_multi_vlan_supported=False,
