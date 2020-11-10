@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from copy import deepcopy
 
 from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
 
@@ -52,5 +53,6 @@ def iterate_dict_actions_by_vlan_range(
     for vlan in get_vlan_list(
         vlan_str, is_vlan_range_supported, is_multi_vlan_supported
     ):
-        dict_action["connectionParams"]["vlanId"] = vlan
-        yield dict_action
+        new_dict_action = deepcopy(dict_action)
+        new_dict_action["connectionParams"]["vlanId"] = vlan
+        yield new_dict_action
