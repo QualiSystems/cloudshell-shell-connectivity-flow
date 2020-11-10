@@ -32,7 +32,7 @@ class VlanServiceModel(BaseModel):
 
 
 class ConnectionParamsModel(BaseModel):
-    vlan_id: int = Field(..., alias="vlanId")
+    vlan_id: str = Field(..., alias="vlanId")
     mode: ConnectionModeEnum
     type: str  # noqa: A003
     vlan_service_attrs: VlanServiceModel = Field(..., alias="vlanServiceAttributes")
@@ -77,13 +77,13 @@ class ConnectivityActionModel(BaseModel):
 def get_actions_from_request(
     request: str,
     model: type[ConnectivityActionModel],
-    is_vlan_rage_supported: bool,
+    is_vlan_range_supported: bool,
     is_multi_vlan_supported: bool,
 ) -> list[ConnectivityActionModel]:
     dict_actions = json.loads(request)["driverRequest"]["actions"]
     parse_partial_fn = partial(
         iterate_dict_actions_by_vlan_range,
-        is_vlan_rage_supported=is_vlan_rage_supported,
+        is_vlan_range_supported=is_vlan_range_supported,
         is_multi_vlan_supported=is_multi_vlan_supported,
     )
     return [model.parse_obj(da) for da in chain(*map(parse_partial_fn, dict_actions))]
