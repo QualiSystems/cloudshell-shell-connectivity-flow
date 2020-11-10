@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from collections import defaultdict
 from concurrent import futures as ft
@@ -27,18 +29,18 @@ class AbstractConnectivityFlow:
         self._error_msgs = defaultdict(list)  # action_id: [msg]
 
     @abstractmethod
-    def _set_vlan(self, action: MODEL) -> str:
+    def _set_vlan(self, action: ConnectivityActionModel) -> str:
         pass
 
     @abstractmethod
-    def _remove_vlan(self, action: MODEL) -> str:
+    def _remove_vlan(self, action: ConnectivityActionModel) -> str:
         pass
 
     @abstractmethod
-    def _remove_all_vlans(self, action: MODEL) -> str:
+    def _remove_all_vlans(self, action: ConnectivityActionModel) -> str:
         pass
 
-    def _get_result(self, actions: list[MODEL]) -> str:
+    def _get_result(self, actions: list[ConnectivityActionModel]) -> str:
         action_results = []
         for action in actions:
             err_msgs = self._error_msgs.get(action.action_id)
@@ -57,7 +59,9 @@ class AbstractConnectivityFlow:
 
         return DriverResponseRoot.prepare_response(action_results).json()
 
-    def _group_actions(self, actions: list[MODEL]) -> list["MODEL"]:
+    def _group_actions(
+        self, actions: list[ConnectivityActionModel]
+    ) -> list[ConnectivityActionModel]:
         def key_fn(action):
             return (
                 action.action_target.name,
@@ -70,9 +74,9 @@ class AbstractConnectivityFlow:
             for _, grouped_actions in groupby(sorted(actions, key=key_fn), key=key_fn)
         ]
 
-    def _wait_futures(self, futures: dict[MODEL, ft.Future]):
-        ft.wait(futures.values())
-        for action, future in futures.items():
+    def _wait_futures(self, futures: dict[ft.Future, ConnectivityActionModel]):
+        ft.wait(futures)
+        for future, action in futures.items():
             try:
                 msg = future.result()
             except Exception as e:
@@ -100,19 +104,19 @@ class AbstractConnectivityFlow:
 
         with ft.ThreadPoolExecutor() as executor:
             remove_all_vlan_futures = {
-                action: executor.submit(self._remove_all_vlans, action)
+                executor.submit(self._remove_all_vlans, action): action
                 for action in self._group_actions(set_actions)
             }
             self._wait_futures(remove_all_vlan_futures)
 
             remove_vlan_futures = {
-                action: executor.submit(self._remove_vlan, action)
+                executor.submit(self._remove_vlan, action): action
                 for action in remove_actions
             }
             self._wait_futures(remove_vlan_futures)
 
             set_vlan_futures = {
-                action: executor.submit(self._set_vlan, action)
+                executor.submit(self._set_vlan, action): action
                 for action in set_actions
             }
             self._wait_futures(set_vlan_futures)
