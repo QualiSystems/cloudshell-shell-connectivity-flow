@@ -1,35 +1,27 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
 import logging
-
-import jsonpickle
+from collections.abc import Callable
+from logging import Logger
+from typing import Optional
 
 from cloudshell.shell.flows.connectivity.exceptions import ApplyConnectivityException
-from cloudshell.shell.flows.connectivity.models.connectivity_request import (
-    ConnectivityActionRequest,
+from cloudshell.shell.flows.connectivity.models.connectivity_model import (
+    ConnectivityActionModel,
+    get_actions_from_request,
 )
-from cloudshell.shell.flows.connectivity.models.driver_request import DriverRequest
-from cloudshell.shell.flows.connectivity.models.driver_response import DriverResponse
-from cloudshell.shell.flows.connectivity.models.driver_response_root import (
+from cloudshell.shell.flows.connectivity.models.driver_response import (
+    ConnectivityActionResult,
     DriverResponseRoot,
 )
 
 
-def connectivity_request_from_json(json_request):
-    json_obj = jsonpickle.decode(json_request)
-    if "driverRequest" not in json_obj:
-        raise ApplyConnectivityException("Deserialized request is None or empty")
-    request = DriverRequest()
-    request.actions = []
-    for action in json_obj["driverRequest"]["actions"]:
-        request.actions.append(ConnectivityActionRequest.from_dict(action))
-    return request
-
-
 def apply_connectivity_changes(
-    request, add_vlan_action, remove_vlan_action, logger=None
-):
+    request: str,
+    add_vlan_action: Callable[[ConnectivityActionModel], ConnectivityActionResult],
+    remove_vlan_action: Callable[[ConnectivityActionModel], ConnectivityActionResult],
+    logger: Optional[Logger] = None,
+) -> str:
     """Standard implementation for the apply_connectivity_changes operation.
 
     This function will accept as an input the actions to perform for add/remove vlan.
@@ -46,7 +38,6 @@ def apply_connectivity_changes(
             a default Python logger will be used
     :return Returns a driver action result object,
             this can be returned to CloudShell server by the command result
-    :rtype: DriverResponseRoot
     """
     if not logger:
         logger = logging.getLogger("apply_connectivity_changes")
@@ -54,24 +45,20 @@ def apply_connectivity_changes(
     if request is None or request == "":
         raise ApplyConnectivityException("Request is None or empty")
 
-    holder = connectivity_request_from_json(request)
+    actions = get_actions_from_request(
+        request,
+        ConnectivityActionModel,
+        is_vlan_range_supported=True,
+        is_multi_vlan_supported=True,
+    )
 
-    driver_response = DriverResponse()
     results = []
-    driver_response_root = DriverResponseRoot()
-
-    for action in holder.actions:
-        logger.info("Action: ", action.__dict__)
-        if action.type == ConnectivityActionRequest.SET_VLAN:
+    for action in actions:
+        logger.info(f"Action: {actions}")
+        if action.type is action.type.SET_VLAN:
             action_result = add_vlan_action(action)
-
-        elif action.type == ConnectivityActionRequest.REMOVE_VLAN:
-            action_result = remove_vlan_action(action)
-
         else:
-            continue
+            action_result = remove_vlan_action(action)
         results.append(action_result)
 
-    driver_response.actionResults = results
-    driver_response_root.driverResponse = driver_response
-    return driver_response_root
+    return DriverResponseRoot.prepare_response(results).json()
