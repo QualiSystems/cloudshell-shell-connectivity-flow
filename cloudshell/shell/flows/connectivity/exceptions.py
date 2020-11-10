@@ -1,7 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-
 class ConnectivityException(Exception):
     pass
 
