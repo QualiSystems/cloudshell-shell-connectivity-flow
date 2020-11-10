@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from enum import Enum
+from functools import partial
 from itertools import chain
 
 from pydantic import BaseModel, Field, validator
@@ -76,13 +77,13 @@ class ConnectivityActionModel(BaseModel):
 def get_actions_from_request(
     request: str,
     model: type[ConnectivityActionModel],
-    # Indicates if VLAN ranges are supported like "120-130"
-    is_vlan_rage_supported=True,
-    # Indicates if device supports comma separated VLAN request like "45, 65, 120-130"
-    is_multi_vlan_supported=True,
+    is_vlan_rage_supported: bool,
+    is_multi_vlan_supported: bool,
 ) -> list[ConnectivityActionModel]:
     dict_actions = json.loads(request)["driverRequest"]["actions"]
-    return [
-        model.parse_obj(da)
-        for da in chain(*map(iterate_dict_actions_by_vlan_range, dict_actions))
-    ]
+    parse_partial_fn = partial(
+        iterate_dict_actions_by_vlan_range,
+        is_vlan_rage_supported=is_vlan_rage_supported,
+        is_multi_vlan_supported=is_multi_vlan_supported,
+    )
+    return [model.parse_obj(da) for da in chain(*map(parse_partial_fn, dict_actions))]
