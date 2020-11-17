@@ -13,8 +13,8 @@ def test_connectivity_action_model(action_request):
     assert action.type.value == "removeVlan"
     assert action.connection_id == action_request["connectionId"]
     assert action.connection_params.vlan_id == "10-11"
-    assert action.connection_params.mode is action.connection_params.mode.ACCESS
-    assert action.connection_params.mode.value == "Access"
+    assert action.connection_params.mode is action.connection_params.mode.TRUNK
+    assert action.connection_params.mode.value == "Trunk"
     assert action.connection_params.vlan_service_attrs.qnq is False
     assert action.connection_params.vlan_service_attrs.ctag == ""
     assert action.connector_attrs.interface == "mac address"

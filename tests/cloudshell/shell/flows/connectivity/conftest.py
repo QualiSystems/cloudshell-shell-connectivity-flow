@@ -18,7 +18,7 @@ def action_request():
         "connectionId": "96582265-2728-43aa-bc97-cefb2457ca44",
         "connectionParams": {
             "vlanId": "10-11",
-            "mode": "Access",
+            "mode": "Trunk",
             "vlanServiceAttributes": [
                 {
                     "attributeName": "QnQ",

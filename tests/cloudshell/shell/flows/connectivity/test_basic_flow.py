@@ -86,5 +86,4 @@ def test_abstract_methods_do_nothing(logger, action_model):
 
     inst = TestClass(logger)
     assert inst._set_vlan(action_model) is None
-    assert inst._remove_all_vlans(action_model) is None
     assert inst._remove_vlan(action_model) is None
