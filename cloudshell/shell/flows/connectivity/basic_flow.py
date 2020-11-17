@@ -3,9 +3,11 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections import defaultdict
 from concurrent import futures as ft
-from itertools import groupby
 from logging import Logger
 
+from cloudshell.shell.flows.connectivity.helpers.remove_vlans import (
+    prepare_remove_vlan_actions,
+)
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
     get_actions_from_request,
@@ -34,10 +36,12 @@ class AbstractConnectivityFlow:
 
     @abstractmethod
     def _remove_vlan(self, action: ConnectivityActionModel) -> str:
-        pass
+        """Remove VLAN for the target.
 
-    @abstractmethod
-    def _remove_all_vlans(self, action: ConnectivityActionModel) -> str:
+        Target is defined by action_target.name for a port on networking device
+        or custom_action_attrs.vm_uuid and custom_action_attrs.vnic for a VM.
+        If connection_params.vlan_id is empty you should clear all VLANs for the target.
+        """
         pass
 
     def _get_result(self, actions: list[ConnectivityActionModel]) -> str:
@@ -58,21 +62,6 @@ class AbstractConnectivityFlow:
             action_results.append(result)
 
         return DriverResponseRoot.prepare_response(action_results).json()
-
-    def _group_actions(
-        self, actions: list[ConnectivityActionModel]
-    ) -> list[ConnectivityActionModel]:
-        def key_fn(action):
-            return (
-                action.action_target.name,
-                action.custom_action_attrs.vm_uuid,
-                action.custom_action_attrs.vnic,
-            )
-
-        return [
-            next(grouped_actions)
-            for _, grouped_actions in groupby(sorted(actions, key=key_fn), key=key_fn)
-        ]
 
     def _wait_futures(self, futures: dict[ft.Future, ConnectivityActionModel]):
         ft.wait(futures)
@@ -101,14 +90,9 @@ class AbstractConnectivityFlow:
         )
         set_actions = list(filter(lambda a: a.type is a.type.SET_VLAN, actions))
         remove_actions = list(filter(lambda a: a.type is a.type.REMOVE_VLAN, actions))
+        remove_actions = prepare_remove_vlan_actions(set_actions, remove_actions)
 
         with ft.ThreadPoolExecutor() as executor:
-            remove_all_vlan_futures = {
-                executor.submit(self._remove_all_vlans, action): action
-                for action in self._group_actions(set_actions)
-            }
-            self._wait_futures(remove_all_vlan_futures)
-
             remove_vlan_futures = {
                 executor.submit(self._remove_vlan, action): action
                 for action in remove_actions

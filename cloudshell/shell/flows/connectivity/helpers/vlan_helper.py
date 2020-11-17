@@ -61,7 +61,8 @@ def iterate_dict_actions_by_vlan_range(
         try:
             int(vlan_str)
         except ValueError:
-            raise ValueError(f"Access mode can be only with int VLAN, not '{vlan_str}'")
+            emsg = f"Access mode and QnQ can be only with int VLAN, not '{vlan_str}'"
+            raise ValueError(emsg)
     for vlan in get_vlan_list(
         vlan_str, is_vlan_range_supported, is_multi_vlan_supported
     ):

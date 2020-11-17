@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 
 from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
@@ -63,18 +65,15 @@ def test_get_vlan_list_failed(vlan_str, error, match, vlan_range, multi_vlan):
         )
 
 
-def test_iterate_dict_actions_by_vlan_range():
-    dict_action = {
-        "connectionParams": {"vlanId": "10,11"},
-        "type": "setVlan",
-    }
-
+def test_iterate_dict_actions_by_vlan_range(action_request):
+    action_request["connectionParams"]["vlanId"] = "10,11"
+    dict_action1 = deepcopy(action_request)
+    dict_action2 = deepcopy(action_request)
+    dict_action1["connectionParams"]["vlanId"] = "10"
+    dict_action2["connectionParams"]["vlanId"] = "11"
     new_actions = list(
         iterate_dict_actions_by_vlan_range(
-            dict_action, is_vlan_range_supported=True, is_multi_vlan_supported=False
+            action_request, is_vlan_range_supported=True, is_multi_vlan_supported=False
         )
     )
-    assert [
-        {"connectionParams": {"vlanId": "10"}, "type": "setVlan"},
-        {"connectionParams": {"vlanId": "11"}, "type": "setVlan"},
-    ] == new_actions
+    assert [dict_action1, dict_action2] == new_actions
