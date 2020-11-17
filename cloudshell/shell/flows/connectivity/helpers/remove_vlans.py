@@ -36,7 +36,7 @@ def prepare_remove_vlan_actions(
     """
     actions = []
     for grouped_actions in _grouped_actions(chain(set_actions, remove_actions)):
-        if filter(lambda a: a.type is ConnectivityTypeEnum.SET_VLAN, grouped_actions):
+        if any(map(lambda a: a.type is ConnectivityTypeEnum.SET_VLAN, grouped_actions)):
             copy_action = deepcopy(next(iter(grouped_actions)))
             copy_action.connection_params.vlan_id = ""
             actions.append(copy_action)

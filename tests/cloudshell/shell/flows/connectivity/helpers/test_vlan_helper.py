@@ -77,3 +77,24 @@ def test_iterate_dict_actions_by_vlan_range(action_request):
         )
     )
     assert [dict_action1, dict_action2] == new_actions
+
+
+def test_iterate_dict_action_by_vlan_range_with_access_mode(action_request):
+    action_request["connectionParams"]["mode"] = "Access"
+
+    with pytest.raises(ValueError, match="Access mode .+ can be only with int VLAN"):
+        list(iterate_dict_actions_by_vlan_range(action_request, True, True))
+
+
+def test_iterate_dict_action_by_vlan_range_with_qnq(action_request):
+    del action_request["connectionParams"]["vlanServiceAttributes"][0]
+    action_request["connectionParams"]["vlanServiceAttributes"].append(
+        {
+            "attributeName": "QnQ",
+            "attributeValue": "True",
+            "type": "vlanServiceAttribute",
+        }
+    )
+
+    with pytest.raises(ValueError, match="Access mode .+ can be only with int VLAN"):
+        list(iterate_dict_actions_by_vlan_range(action_request, True, True))
