@@ -7,10 +7,6 @@ from itertools import chain
 
 from pydantic import BaseModel, Field, validator
 
-from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
-    iterate_dict_actions_by_vlan_range,
-)
-
 
 class ConnectivityTypeEnum(Enum):
     SET_VLAN = "setVlan"
@@ -80,6 +76,10 @@ def get_actions_from_request(
     is_vlan_range_supported: bool,
     is_multi_vlan_supported: bool,
 ) -> list[ConnectivityActionModel]:
+    from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
+        iterate_dict_actions_by_vlan_range,
+    )
+
     dict_actions = json.loads(request)["driverRequest"]["actions"]
     parse_partial_fn = partial(
         iterate_dict_actions_by_vlan_range,

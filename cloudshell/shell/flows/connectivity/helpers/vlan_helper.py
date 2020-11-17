@@ -4,6 +4,9 @@ from collections.abc import Iterable
 from copy import deepcopy
 
 from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
+from cloudshell.shell.flows.connectivity.models.connectivity_model import (
+    ConnectivityActionModel,
+)
 
 
 def _validate_vlan_number(number: str):
@@ -49,9 +52,12 @@ def get_vlan_list(
 def iterate_dict_actions_by_vlan_range(
     dict_action: dict, is_vlan_range_supported: bool, is_multi_vlan_supported: bool
 ):
-    vlan_str = dict_action["connectionParams"]["vlanId"]
-    port_model = dict_action["connectionParams"]["mode"]
-    if port_model.lower() == "access":
+    action = ConnectivityActionModel(**dict_action)
+    vlan_str = action.connection_params.vlan_id
+    if (
+        action.connection_params.mode is action.connection_params.mode.ACCESS
+        or action.connection_params.vlan_service_attrs.qnq
+    ):
         try:
             int(vlan_str)
         except ValueError:
