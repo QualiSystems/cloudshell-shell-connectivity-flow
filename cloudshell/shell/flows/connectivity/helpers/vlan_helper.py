@@ -50,6 +50,12 @@ def iterate_dict_actions_by_vlan_range(
     dict_action: dict, is_vlan_range_supported: bool, is_multi_vlan_supported: bool
 ):
     vlan_str = dict_action["connectionParams"]["vlanId"]
+    port_model = dict_action["connectionParams"]["mode"]
+    if port_model.lower() == "access":
+        try:
+            int(vlan_str)
+        except ValueError:
+            raise ValueError(f"Access mode can be only with int VLAN, not '{vlan_str}'")
     for vlan in get_vlan_list(
         vlan_str, is_vlan_range_supported, is_multi_vlan_supported
     ):
