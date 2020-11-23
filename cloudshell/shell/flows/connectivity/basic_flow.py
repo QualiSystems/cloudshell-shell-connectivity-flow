@@ -10,22 +10,23 @@ from cloudshell.shell.flows.connectivity.helpers.remove_vlans import (
 )
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
-    get_actions_from_request,
 )
 from cloudshell.shell.flows.connectivity.models.driver_response import (
     ConnectivityActionResult,
     DriverResponseRoot,
 )
+from cloudshell.shell.flows.connectivity.parse_request_service import (
+    AbstractParseConnectivityService,
+)
 
 
 class AbstractConnectivityFlow:
-    MODEL = ConnectivityActionModel
-    # Indicates if VLAN ranges are supported like "120-130"
-    IS_VLAN_RANGE_SUPPORTED = True
-    # Indicates if device supports comma separated VLAN request like "45, 65, 120-130"
-    IS_MULTI_VLAN_SUPPORTED = True
-
-    def __init__(self, logger: Logger):
+    def __init__(
+        self,
+        parse_connectivity_request_service: AbstractParseConnectivityService,
+        logger: Logger,
+    ):
+        self._parse_connectivity_request_service = parse_connectivity_request_service
         self._logger = logger
         self._success_msgs = defaultdict(list)  # action_id: [msg]
         self._error_msgs = defaultdict(list)  # action_id: [msg]
@@ -50,7 +51,7 @@ class AbstractConnectivityFlow:
             err_msgs = self._error_msgs.get(action.action_id)
             vlan = action.connection_params.vlan_id
             if err_msgs:
-                err_msgs = "\n\t".join(self._error_msgs[action.action_id])
+                err_msgs = "\n\t".join(err_msgs)
                 msg = (
                     f"Vlan {vlan} configuration failed.\n"
                     f"Vlan configuration details:\n{err_msgs}"
@@ -82,12 +83,7 @@ class AbstractConnectivityFlow:
                 self._success_msgs[action.action_id].append(msg)
 
     def apply_connectivity(self, request: str) -> str:
-        actions = get_actions_from_request(
-            request,
-            self.MODEL,
-            self.IS_VLAN_RANGE_SUPPORTED,
-            self.IS_MULTI_VLAN_SUPPORTED,
-        )
+        actions = self._parse_connectivity_request_service.get_actions(request)
         set_actions = list(filter(lambda a: a.type is a.type.SET_VLAN, actions))
         remove_actions = list(filter(lambda a: a.type is a.type.REMOVE_VLAN, actions))
         remove_actions = prepare_remove_vlan_actions(set_actions, remove_actions)
