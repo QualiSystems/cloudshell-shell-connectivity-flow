@@ -8,11 +8,13 @@ from typing import Optional
 from cloudshell.shell.flows.connectivity.exceptions import ApplyConnectivityException
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
-    get_actions_from_request,
 )
 from cloudshell.shell.flows.connectivity.models.driver_response import (
     ConnectivityActionResult,
     DriverResponseRoot,
+)
+from cloudshell.shell.flows.connectivity.parse_request_service import (
+    ParseConnectivityRequestService,
 )
 
 
@@ -45,12 +47,9 @@ def apply_connectivity_changes(
     if request is None or request == "":
         raise ApplyConnectivityException("Request is None or empty")
 
-    actions = get_actions_from_request(
-        request,
-        ConnectivityActionModel,
-        is_vlan_range_supported=True,
-        is_multi_vlan_supported=True,
-    )
+    actions = ParseConnectivityRequestService(
+        is_vlan_range_supported=True, is_multi_vlan_supported=True
+    ).get_actions(request)
 
     results = []
     for action in actions:
