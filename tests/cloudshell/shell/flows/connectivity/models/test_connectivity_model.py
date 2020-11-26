@@ -1,8 +1,5 @@
-import json
-
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
-    get_actions_from_request,
 )
 
 
@@ -22,17 +19,3 @@ def test_connectivity_action_model(action_request):
     assert action.action_target.address == "full address"
     assert action.custom_action_attrs.vm_uuid == "vm_uid"
     assert action.custom_action_attrs.vnic == "vnic"
-
-
-def test_get_actions_from_request(driver_request):
-    actions = get_actions_from_request(
-        json.dumps(driver_request),
-        ConnectivityActionModel,
-        is_vlan_range_supported=False,
-        is_multi_vlan_supported=False,
-    )
-    assert len(actions) == 2
-    first, second = actions
-    assert first.connection_params.vlan_id == "10"
-    assert second.connection_params.vlan_id == "11"
-    assert first.action_id == second.action_id
