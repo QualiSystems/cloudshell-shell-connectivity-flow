@@ -1,9 +1,6 @@
-from __future__ import annotations
-
 import logging
-from collections.abc import Callable
 from logging import Logger
-from typing import Optional
+from typing import Callable, Optional
 
 from cloudshell.shell.flows.connectivity.exceptions import ApplyConnectivityException
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (

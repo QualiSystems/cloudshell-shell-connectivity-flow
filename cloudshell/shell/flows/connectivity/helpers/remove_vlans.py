@@ -1,8 +1,6 @@
-from __future__ import annotations
-
-from collections.abc import Iterable
 from copy import deepcopy
 from itertools import chain, groupby
+from typing import Iterable, List
 
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
@@ -12,7 +10,7 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
 
 def _grouped_actions(
     actions: Iterable[ConnectivityActionModel],
-) -> list[list[ConnectivityActionModel]]:
+) -> List[List[ConnectivityActionModel]]:
     def key_fn(action):
         return (
             action.action_target.name,
@@ -29,7 +27,7 @@ def _grouped_actions(
 def prepare_remove_vlan_actions(
     set_actions: Iterable[ConnectivityActionModel],
     remove_actions: Iterable[ConnectivityActionModel],
-) -> list[ConnectivityActionModel]:
+) -> List[ConnectivityActionModel]:
     """Preparing actions for remove VLAN method.
 
     If action type is setVlan we need to clear VLANs on that interface.
