@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from concurrent import futures as ft
 from logging import Logger
@@ -20,7 +20,7 @@ from cloudshell.shell.flows.connectivity.parse_request_service import (
 )
 
 
-class AbstractConnectivityFlow:
+class AbstractConnectivityFlow(ABC):
     def __init__(
         self,
         parse_connectivity_request_service: AbstractParseConnectivityService,
@@ -33,7 +33,7 @@ class AbstractConnectivityFlow:
 
     @abstractmethod
     def _set_vlan(self, action: ConnectivityActionModel) -> str:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _remove_vlan(self, action: ConnectivityActionModel) -> str:
@@ -43,7 +43,7 @@ class AbstractConnectivityFlow:
         or custom_action_attrs.vm_uuid and custom_action_attrs.vnic for a VM.
         If connection_params.vlan_id is empty you should clear all VLANs for the target.
         """
-        pass
+        raise NotImplementedError()
 
     def _get_result(self, actions: list[ConnectivityActionModel]) -> str:
         action_results = []

@@ -6,10 +6,20 @@ from cloudshell.shell.flows.connectivity.basic_flow import AbstractConnectivityF
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
 )
+from cloudshell.shell.flows.connectivity.parse_request_service import (
+    ParseConnectivityRequestService,
+)
 
 
 @pytest.fixture()
-def connectivity_flow(logger):
+def parse_connectivity_request_service():
+    return ParseConnectivityRequestService(
+        is_vlan_range_supported=True, is_multi_vlan_supported=True
+    )
+
+
+@pytest.fixture()
+def connectivity_flow(parse_connectivity_request_service, logger):
     class ConnectivityFlow(AbstractConnectivityFlow):
         IS_SUCCESS = True
 
@@ -23,7 +33,7 @@ def connectivity_flow(logger):
         _remove_vlan = _generic_change_vlan_fn
         _remove_all_vlans = _generic_change_vlan_fn
 
-    return ConnectivityFlow(logger)
+    return ConnectivityFlow(parse_connectivity_request_service, logger)
 
 
 def test_connectivity_flow(connectivity_flow, driver_request):
@@ -80,10 +90,24 @@ def test_connectivity_flow_set_vlan(connectivity_flow, driver_request):
     )
 
 
-def test_abstract_methods_do_nothing(logger, action_model):
-    class TestClass(AbstractConnectivityFlow):
-        pass
+def test_connectivity_flow_abstract_methods(parse_connectivity_request_service, logger):
+    with pytest.raises(TypeError, match="Can't instantiate abstract class"):
+        AbstractConnectivityFlow(parse_connectivity_request_service, logger)
 
-    inst = TestClass(logger)
-    assert inst._set_vlan(action_model) is None
-    assert inst._remove_vlan(action_model) is None
+
+def test_abstract_methods_raises(
+    parse_connectivity_request_service, logger, action_model
+):
+    class TestClass(AbstractConnectivityFlow):
+        def _set_vlan(self, action: ConnectivityActionModel) -> str:
+            return super()._set_vlan(action_model)
+
+        def _remove_vlan(self, action: ConnectivityActionModel) -> str:
+            return super()._remove_vlan(action_model)
+
+    inst = TestClass(parse_connectivity_request_service, logger)
+    with pytest.raises(NotImplementedError):
+        inst._set_vlan(action_model)
+
+    with pytest.raises(NotImplementedError):
+        inst._remove_vlan(action_model)
