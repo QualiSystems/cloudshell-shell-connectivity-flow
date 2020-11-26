@@ -1,7 +1,6 @@
-from __future__ import annotations
-
 import json
 from abc import ABC, abstractmethod
+from typing import List, Type
 
 from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
     iterate_dict_actions_by_vlan_range,
@@ -13,7 +12,7 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
 
 class AbstractParseConnectivityService(ABC):
     @abstractmethod
-    def get_actions(self, request: str) -> list[ConnectivityActionModel]:
+    def get_actions(self, request: str) -> List[ConnectivityActionModel]:
         raise NotImplementedError()
 
 
@@ -22,7 +21,7 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
         self,
         is_vlan_range_supported: bool,
         is_multi_vlan_supported: bool,
-        connectivity_model_cls: type[ConnectivityActionModel] = ConnectivityActionModel,
+        connectivity_model_cls: Type[ConnectivityActionModel] = ConnectivityActionModel,
     ):
         """Parse a connectivity request and returns connectivity actions.
 
@@ -44,7 +43,7 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
                 dict_action, self.is_vlan_range_supported, self.is_multi_vlan_supported
             )
 
-    def get_actions(self, request: str) -> list[ConnectivityActionModel]:
+    def get_actions(self, request: str) -> List[ConnectivityActionModel]:
         return [
             self.connectivity_model_cls.parse_obj(da)
             for da in self._iterate_dict_actions(request)

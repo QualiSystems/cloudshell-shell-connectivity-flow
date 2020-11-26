@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 import json
+from typing import List
 
 import pytest
 
@@ -20,7 +19,7 @@ def test_abstract_parse_connectivity_request_service_initialize():
 
 def test_abstract_parse_connectivity_request_service_get_actions_raises(driver_request):
     class TestClass(AbstractParseConnectivityService):
-        def get_actions(self, request: str) -> list[ConnectivityActionModel]:
+        def get_actions(self, request: str) -> List[ConnectivityActionModel]:
             super().get_actions(request)
 
     service = TestClass()
