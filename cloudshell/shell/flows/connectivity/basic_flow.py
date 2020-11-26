@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from concurrent import futures as ft
 from logging import Logger
+from typing import Dict, List
 
 from cloudshell.shell.flows.connectivity.helpers.remove_vlans import (
     prepare_remove_vlan_actions,
@@ -45,7 +44,7 @@ class AbstractConnectivityFlow(ABC):
         """
         raise NotImplementedError()
 
-    def _get_result(self, actions: list[ConnectivityActionModel]) -> str:
+    def _get_result(self, actions: List[ConnectivityActionModel]) -> str:
         action_results = []
         for action in actions:
             err_msgs = self._error_msgs.get(action.action_id)
@@ -64,7 +63,7 @@ class AbstractConnectivityFlow(ABC):
 
         return DriverResponseRoot.prepare_response(action_results).json()
 
-    def _wait_futures(self, futures: dict[ft.Future, ConnectivityActionModel]):
+    def _wait_futures(self, futures: Dict[ft.Future, ConnectivityActionModel]):
         ft.wait(futures)
         for future, action in futures.items():
             try:

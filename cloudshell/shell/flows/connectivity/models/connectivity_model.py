@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 from enum import Enum
+from typing import Dict, List
 
 from pydantic import BaseModel, Field, validator
 
@@ -15,7 +14,7 @@ class ConnectionModeEnum(Enum):
     TRUNK = "Trunk"
 
 
-def list_attrs_to_dict(list_attrs: list[dict[str, str]]) -> dict[str, str]:
+def list_attrs_to_dict(list_attrs: List[Dict[str, str]]) -> Dict[str, str]:
     return {attr["attributeName"]: attr["attributeValue"] for attr in list_attrs}
 
 

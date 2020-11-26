@@ -1,7 +1,5 @@
-from __future__ import annotations
-
-from collections.abc import Iterable
 from copy import deepcopy
+from typing import Iterable, List, Set
 
 from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
@@ -24,14 +22,14 @@ def _validate_vlan_range(vlan_range):
         _validate_vlan_number(vlan_number)
 
 
-def _sort_vlans(vlans: Iterable[str]) -> list[str]:
+def _sort_vlans(vlans: Iterable[str]) -> List[str]:
     return sorted(vlans, key=lambda v: tuple(map(int, v.split("-"))))
 
 
 def get_vlan_list(
     vlan_str: str, is_vlan_range_supported: bool, is_multi_vlan_supported: bool
-) -> list[str]:
-    result: set[str] = set()
+) -> List[str]:
+    result: Set[str] = set()
     for vlan_range in map(str.strip, vlan_str.split(",")):
         if "-" not in vlan_range:
             _validate_vlan_number(vlan_range)
