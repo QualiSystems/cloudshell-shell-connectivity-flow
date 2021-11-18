@@ -37,7 +37,9 @@ def prepare_remove_vlan_actions(
         if any(map(lambda a: a.type is ConnectivityTypeEnum.SET_VLAN, grouped_actions)):
             copy_action = deepcopy(next(iter(grouped_actions)))
             copy_action.connection_params.vlan_id = ""
-            actions.append(copy_action)
+            # we don't need to clear port for the Cloud Providers
+            if not copy_action.custom_action_attrs.vm_uuid:
+                actions.append(copy_action)
         else:
             actions.extend(grouped_actions)
     return actions

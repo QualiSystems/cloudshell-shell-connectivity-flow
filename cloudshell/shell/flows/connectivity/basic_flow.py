@@ -82,6 +82,7 @@ class AbstractConnectivityFlow(ABC):
                 self._success_msgs[action.action_id].append(msg)
 
     def apply_connectivity(self, request: str) -> str:
+        self._logger.debug(f"Apply connectivity request: {request}")
         actions = self._parse_connectivity_request_service.get_actions(request)
         set_actions = list(filter(lambda a: a.type is a.type.SET_VLAN, actions))
         remove_actions = list(filter(lambda a: a.type is a.type.REMOVE_VLAN, actions))
