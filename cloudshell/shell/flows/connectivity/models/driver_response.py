@@ -8,7 +8,7 @@ from .connectivity_model import ConnectivityActionModel
 class ConnectivityActionResult(BaseModel):
     actionId: str
     type: str  # noqa: A003
-    updateInterface: str
+    updatedInterface: str
     infoMessage: str = ""
     errorMessage: str = ""
     success: bool = True
@@ -18,7 +18,7 @@ class ConnectivityActionResult(BaseModel):
         return {
             "actionId": action.action_id,
             "type": action.type.value,
-            "updateInterface": action.action_target.name,
+            "updatedInterface": action.action_target.name,
         }
 
     @classmethod
