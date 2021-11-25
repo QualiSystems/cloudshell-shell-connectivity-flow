@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from concurrent import futures as ft
 from logging import Logger
-from typing import Dict, List
 
 from cloudshell.shell.flows.connectivity.helpers.remove_vlans import (
     prepare_remove_vlan_actions,
@@ -27,15 +27,14 @@ class AbstractConnectivityFlow(ABC):
     ):
         self._parse_connectivity_request_service = parse_connectivity_request_service
         self._logger = logger
-        self._success_msgs = defaultdict(list)  # action_id: [msg]
-        self._error_msgs = defaultdict(list)  # action_id: [msg]
+        self._results: list[ConnectivityActionResult] = []
 
     @abstractmethod
-    def _set_vlan(self, action: ConnectivityActionModel) -> str:
+    def _set_vlan(self, action: ConnectivityActionModel) -> ConnectivityActionResult:
         raise NotImplementedError()
 
     @abstractmethod
-    def _remove_vlan(self, action: ConnectivityActionModel) -> str:
+    def _remove_vlan(self, action: ConnectivityActionModel) -> ConnectivityActionResult:
         """Remove VLAN for the target.
 
         Target is defined by action_target.name for a port on networking device
@@ -44,31 +43,15 @@ class AbstractConnectivityFlow(ABC):
         """
         raise NotImplementedError()
 
-    def _get_result(self, actions: List[ConnectivityActionModel]) -> str:
-        action_results = []
-        for action in actions:
-            err_msgs = self._error_msgs.get(action.action_id)
-            vlan = action.connection_params.vlan_id
-            if err_msgs:
-                err_msgs = "\n\t".join(err_msgs)
-                msg = (
-                    f"Vlan {vlan} configuration failed.\n"
-                    f"Vlan configuration details:\n{err_msgs}"
-                )
-                result = ConnectivityActionResult.fail_result(action, msg)
-            else:
-                msg = f"Vlan {vlan} configuration successfully completed"
-                result = ConnectivityActionResult.success_result(action, msg)
-            action_results.append(result)
+    def _get_result(self) -> str:
+        return DriverResponseRoot.prepare_response(self._results).json()
 
-        return DriverResponseRoot.prepare_response(action_results).json()
-
-    def _wait_futures(self, futures: Dict[ft.Future, ConnectivityActionModel]):
+    def _wait_futures(self, futures: dict[ft.Future, ConnectivityActionModel]):
         ft.wait(futures)
         for future, action in futures.items():
             try:
-                msg = future.result()
-            except Exception as e:
+                result: ConnectivityActionResult = future.result()
+            except Exception:
                 vlan = action.connection_params.vlan_id
                 target_name = action.action_target.name
                 emsg = f"Failed to apply VLAN changes ({vlan}) for target {target_name}"
@@ -77,9 +60,8 @@ class AbstractConnectivityFlow(ABC):
                     if action.custom_action_attrs.vnic:
                         emsg += f" for vNIC {action.custom_action_attrs.vnic}"
                 self._logger.exception(emsg)
-                self._error_msgs[action.action_id].append(str(e))
-            else:
-                self._success_msgs[action.action_id].append(msg)
+                result = ConnectivityActionResult.fail_result(action, emsg)
+            self._results.append(result)
 
     def apply_connectivity(self, request: str) -> str:
         self._logger.debug(f"Apply connectivity request: {request}")
@@ -101,4 +83,4 @@ class AbstractConnectivityFlow(ABC):
             }
             self._wait_futures(set_vlan_futures)
 
-        return self._get_result(actions)
+        return self._get_result()
