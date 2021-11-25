@@ -57,7 +57,7 @@ class AbstractConnectivityFlow(ABC):
                 )
                 result = ConnectivityActionResult.fail_result(action, msg)
             else:
-                msg = f"Vlan {vlan} configuration " f"successfully completed"
+                msg = f"Vlan {vlan} configuration successfully completed"
                 result = ConnectivityActionResult.success_result(action, msg)
             action_results.append(result)
 
