@@ -21,7 +21,7 @@ def test_connectivity_action_result(success, msg, action_model):
     assert result.success is success
     assert result.actionId == action_model.action_id
     assert result.type == action_model.type.value
-    assert result.updateInterface == action_model.action_target.name
+    assert result.updatedInterface == action_model.action_target.name
 
 
 def test_prepare_response(action_model):
@@ -32,7 +32,7 @@ def test_prepare_response(action_model):
         '{"driverResponse": {"actionResults": ['
         '{"actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495", '
         '"type": "removeVlan", '
-        '"updateInterface": "centos", '
+        '"updatedInterface": "centos", '
         '"infoMessage": "success msg", '
         '"errorMessage": "", '
         '"success": true'

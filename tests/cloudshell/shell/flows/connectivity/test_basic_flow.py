@@ -6,6 +6,9 @@ from cloudshell.shell.flows.connectivity.basic_flow import AbstractConnectivityF
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
 )
+from cloudshell.shell.flows.connectivity.models.driver_response import (
+    ConnectivityActionResult,
+)
 from cloudshell.shell.flows.connectivity.parse_request_service import (
     ParseConnectivityRequestService,
 )
@@ -23,11 +26,15 @@ def connectivity_flow(parse_connectivity_request_service, logger):
     class ConnectivityFlow(AbstractConnectivityFlow):
         IS_SUCCESS = True
 
-        def _generic_change_vlan_fn(self, action: ConnectivityActionModel) -> str:
+        def _generic_change_vlan_fn(
+            self, action: ConnectivityActionModel
+        ) -> ConnectivityActionResult:
             if self.IS_SUCCESS:
-                return "success msg"
+                return ConnectivityActionResult.success_result_vm(
+                    action, "successful", "mac address"
+                )
             else:
-                raise Exception("error msg")
+                return ConnectivityActionResult.fail_result(action, "fail")
 
         _set_vlan = _generic_change_vlan_fn
         _remove_vlan = _generic_change_vlan_fn
@@ -42,8 +49,8 @@ def test_connectivity_flow(connectivity_flow, driver_request):
         '{"driverResponse": {"actionResults": [{'
         '"actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495", '
         '"type": "removeVlan", '
-        '"updateInterface": "centos", '
-        '"infoMessage": "Vlan 10-11 configuration successfully completed", '
+        '"updatedInterface": "mac address", '
+        '"infoMessage": "successful", '
         '"errorMessage": "", '
         '"success": true'
         "}]}}"
@@ -61,13 +68,9 @@ def test_connectivity_flow_failed(connectivity_flow, driver_request):
                         "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495"
                     ),
                     "type": "removeVlan",
-                    "updateInterface": "centos",
+                    "updatedInterface": "centos",
                     "infoMessage": "",
-                    "errorMessage": (
-                        "Vlan 10-11 configuration failed.\n"
-                        "Vlan configuration details:\n"
-                        "error msg"
-                    ),
+                    "errorMessage": "fail",
                     "success": False,
                 }
             ]
@@ -82,8 +85,8 @@ def test_connectivity_flow_set_vlan(connectivity_flow, driver_request):
         '{"driverResponse": {"actionResults": [{'
         '"actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495", '
         '"type": "setVlan", '
-        '"updateInterface": "centos", '
-        '"infoMessage": "Vlan 10-11 configuration successfully completed", '
+        '"updatedInterface": "mac address", '
+        '"infoMessage": "successful", '
         '"errorMessage": "", '
         '"success": true'
         "}]}}"
