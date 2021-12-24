@@ -44,7 +44,7 @@ def test_apply_connectivity_changes(logger, action_request):
                     "infoMessage": "success msg",
                     "success": True,
                     "type": "removeVlan",
-                    "updateInterface": "centos",
+                    "updatedInterface": "centos",
                 },
                 {
                     "actionId": "new action id",
@@ -52,7 +52,7 @@ def test_apply_connectivity_changes(logger, action_request):
                     "infoMessage": "success msg",
                     "success": True,
                     "type": "setVlan",
-                    "updateInterface": "centos",
+                    "updatedInterface": "centos",
                 },
             ]
         }
