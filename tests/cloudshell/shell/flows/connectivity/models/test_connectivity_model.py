@@ -19,3 +19,12 @@ def test_connectivity_action_model(action_request):
     assert action.action_target.address == "full address"
     assert action.custom_action_attrs.vm_uuid == "vm_uid"
     assert action.custom_action_attrs.vnic == "vnic"
+
+
+def test_connectivity_action_model_strip_vnic_name(action_request):
+    assert action_request["customActionAttributes"][1]["attributeName"] == "Vnic Name"
+    action_request["customActionAttributes"][1]["attributeValue"] = " vnic name "
+
+    action = ConnectivityActionModel.parse_obj(action_request)
+
+    assert action.custom_action_attrs.vnic == "vnic name"
