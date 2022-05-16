@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, constr, validator
 
 
 class ConnectivityTypeEnum(Enum):
@@ -46,7 +46,7 @@ class ActionTargetModel(BaseModel):
 
 class CustomActionAttrsModel(BaseModel):
     vm_uuid: str = Field("", alias="VM_UUID")
-    vnic: str = Field("", alias="Vnic Name")
+    vnic: constr(strip_whitespace=True) = Field("", alias="Vnic Name")
 
 
 class ConnectivityActionModel(BaseModel):
