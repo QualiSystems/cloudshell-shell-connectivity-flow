@@ -27,7 +27,7 @@ class AbstractConnectivityFlow(ABC):
     ):
         self._parse_connectivity_request_service = parse_connectivity_request_service
         self._logger = logger
-        self._results: list[ConnectivityActionResult] = []
+        self._results: dict[str, ConnectivityActionResult] = {}
 
     @abstractmethod
     def _set_vlan(self, action: ConnectivityActionModel) -> ConnectivityActionResult:
@@ -44,14 +44,14 @@ class AbstractConnectivityFlow(ABC):
         raise NotImplementedError()
 
     def _get_result(self) -> str:
-        return DriverResponseRoot.prepare_response(self._results).json()
+        return DriverResponseRoot.prepare_response(list(self._results.values())).json()
 
     def _wait_futures(self, futures: dict[ft.Future, ConnectivityActionModel]):
         ft.wait(futures)
         for future, action in futures.items():
             try:
                 result: ConnectivityActionResult = future.result()
-            except Exception:
+            except Exception as e:
                 vlan = action.connection_params.vlan_id
                 target_name = action.action_target.name
                 emsg = f"Failed to apply VLAN changes ({vlan}) for target {target_name}"
@@ -59,9 +59,10 @@ class AbstractConnectivityFlow(ABC):
                     emsg += f" on VM ID {action.custom_action_attrs.vm_uuid}"
                     if action.custom_action_attrs.vnic:
                         emsg += f" for vNIC {action.custom_action_attrs.vnic}"
+                emsg = f"{emsg}. Error: {e}"
                 self._logger.exception(emsg)
                 result = ConnectivityActionResult.fail_result(action, emsg)
-            self._results.append(result)
+            self._results[result.actionId] = result
 
     def apply_connectivity(self, request: str) -> str:
         self._logger.debug(f"Apply connectivity request: {request}")
@@ -77,6 +78,7 @@ class AbstractConnectivityFlow(ABC):
             }
             self._wait_futures(remove_vlan_futures)
 
+            self._filter_set_actions(set_actions)
             set_vlan_futures = {
                 executor.submit(self._set_vlan, action): action
                 for action in set_actions
@@ -84,3 +86,9 @@ class AbstractConnectivityFlow(ABC):
             self._wait_futures(set_vlan_futures)
 
         return self._get_result()
+
+    def _filter_set_actions(self, set_actions: list[ConnectivityActionModel]):
+        for action in set_actions[:]:
+            result = self._results.get(action.action_id)
+            if result and result.success is False:
+                set_actions.remove(action)
