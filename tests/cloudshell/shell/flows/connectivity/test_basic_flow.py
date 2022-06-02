@@ -167,3 +167,27 @@ def test_do_run_set_vlan_if_remove_vlan_success(
     assert res
     flow._remove_vlan.assert_called_once()
     flow._set_vlan.assert_called_once()
+
+
+def test_failed_response_if_remove_vlan_failed(
+    create_networking_action_request, parse_connectivity_request_service, logger
+):
+    class TestedConnectivityFlow(AbstractConnectivityFlow):
+        def _remove_vlan(self, action: ConnectivityActionModel) -> str:
+            1 / 0
+
+        _set_vlan = None
+
+    action = create_networking_action_request(set_vlan=False)
+    request = create_driver_str_request(action)
+
+    flow = TestedConnectivityFlow(parse_connectivity_request_service, logger)
+    res = flow.apply_connectivity(request)
+
+    assert res
+    res = json.loads(res)
+    assert len(res["driverResponse"]["actionResults"]) == 1
+    action_result = res["driverResponse"]["actionResults"][0]
+    assert action_result["success"] is False
+    emsg = "division by zero"
+    assert emsg in action_result["errorMessage"]
