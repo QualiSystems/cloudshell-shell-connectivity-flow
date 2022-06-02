@@ -1,4 +1,5 @@
 import json
+from unittest.mock import Mock
 
 import pytest
 
@@ -12,6 +13,8 @@ from cloudshell.shell.flows.connectivity.models.driver_response import (
 from cloudshell.shell.flows.connectivity.parse_request_service import (
     ParseConnectivityRequestService,
 )
+
+from tests.cloudshell.shell.flows.connectivity.conftest import create_driver_str_request
 
 
 @pytest.fixture()
@@ -38,7 +41,6 @@ def connectivity_flow(parse_connectivity_request_service, logger):
 
         _set_vlan = _generic_change_vlan_fn
         _remove_vlan = _generic_change_vlan_fn
-        _remove_all_vlans = _generic_change_vlan_fn
 
     return ConnectivityFlow(parse_connectivity_request_service, logger)
 
@@ -114,3 +116,54 @@ def test_abstract_methods_raises(
 
     with pytest.raises(NotImplementedError):
         inst._remove_vlan(action_model)
+
+
+def test_set_vlan_request_returns_one_response_action(
+    create_networking_action_request, connectivity_flow
+):
+    action = create_networking_action_request(set_vlan=True)
+    request = create_driver_str_request(action)
+
+    res = connectivity_flow.apply_connectivity(request)
+
+    assert res
+    action_results = json.loads(res)["driverResponse"]["actionResults"]
+    assert len(action_results) == 1
+
+
+def test_do_not_run_set_vlan_if_remove_vlan_failed(
+    create_networking_action_request, connectivity_flow
+):
+    action = create_networking_action_request(set_vlan=True)
+    request = create_driver_str_request(action)
+
+    connectivity_flow.IS_SUCCESS = False
+    connectivity_flow._set_vlan = Mock()
+    res = connectivity_flow.apply_connectivity(request)
+
+    assert res
+    action_results = json.loads(res)["driverResponse"]["actionResults"]
+    assert len(action_results) == 1
+    assert action_results[0]["success"] is False
+    connectivity_flow._set_vlan.assert_not_called()
+
+
+def test_do_run_set_vlan_if_remove_vlan_success(
+    create_networking_action_request, parse_connectivity_request_service, logger
+):
+    def return_success_result(action):
+        return ConnectivityActionResult.success_result(action, "successful")
+
+    class TestedConnectivityFlow(AbstractConnectivityFlow):
+        _remove_vlan = Mock(side_effect=return_success_result)
+        _set_vlan = Mock(side_effect=return_success_result)
+
+    action = create_networking_action_request(set_vlan=True)
+    request = create_driver_str_request(action)
+
+    flow = TestedConnectivityFlow(parse_connectivity_request_service, logger)
+    res = flow.apply_connectivity(request)
+
+    assert res
+    flow._remove_vlan.assert_called_once()
+    flow._set_vlan.assert_called_once()
