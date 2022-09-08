@@ -51,7 +51,7 @@ def iterate_dict_actions_by_vlan_range(
     dict_action: dict, is_vlan_range_supported: bool, is_multi_vlan_supported: bool
 ):
     action = ConnectivityActionModel(**dict_action)
-    vlan_str = action.connection_params.vlan_id
+    vlan_str = action.connection_params.vlan_service_attrs.vlan_id
     if (
         action.connection_params.mode is action.connection_params.mode.ACCESS
         or action.connection_params.vlan_service_attrs.qnq
@@ -65,5 +65,7 @@ def iterate_dict_actions_by_vlan_range(
         vlan_str, is_vlan_range_supported, is_multi_vlan_supported
     ):
         new_dict_action = deepcopy(dict_action)
-        new_dict_action["connectionParams"]["vlanId"] = vlan
+        for attr_dict in new_dict_action["connectionParams"]["vlanServiceAttributes"]:
+            if attr_dict["attributeName"] == "VLAN ID":
+                attr_dict["attributeValue"] = vlan
         yield new_dict_action
