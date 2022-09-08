@@ -21,9 +21,12 @@ def list_attrs_to_dict(list_attrs: List[Dict[str, str]]) -> Dict[str, str]:
 class VlanServiceModel(BaseModel):
     qnq: bool = Field(..., alias="QnQ")
     ctag: str = Field(..., alias="CTag")
+    vlan_id: str = Field(..., alias="VLAN ID")
+    virtual_network: str = Field("", alias="Virtual Network")
 
 
 class ConnectionParamsModel(BaseModel):
+    # if Virtual Network set vlanId will be overwritten
     vlan_id: str = Field(..., alias="vlanId")
     mode: ConnectionModeEnum
     type: str  # noqa: A003
