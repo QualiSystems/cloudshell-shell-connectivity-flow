@@ -69,3 +69,23 @@ def iterate_dict_actions_by_vlan_range(
             if attr_dict["attributeName"] == "VLAN ID":
                 attr_dict["attributeValue"] = vlan
         yield new_dict_action
+
+
+def patch_virtual_network(dict_action: dict) -> None:
+    """Removes Virtual Network if it's equal to VLAN ID.
+
+    Virtual Network can contain name or ID of the existed network for this user should
+    edit the attribute in Resource Manager.
+    By default, Virtual Network contains VLAN ID.
+    """
+    vlan_id = None
+    for attr_dict in dict_action["connectionParams"]["vlanServiceAttributes"]:
+        if attr_dict["attributeName"] == "VLAN ID":
+            vlan_id = attr_dict["attributeValue"]
+            break
+
+    for attr_dict in dict_action["connectionParams"]["vlanServiceAttributes"]:
+        if attr_dict["attributeName"] == "Virtual Network":
+            if attr_dict["attributeValue"] == str(vlan_id):
+                attr_dict["attributeValue"] = None
+            break
