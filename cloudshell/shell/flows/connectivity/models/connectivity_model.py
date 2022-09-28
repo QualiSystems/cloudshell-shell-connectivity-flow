@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, constr, validator
 
@@ -22,7 +22,7 @@ class VlanServiceModel(BaseModel):
     qnq: bool = Field(..., alias="QnQ")
     ctag: str = Field(..., alias="CTag")
     vlan_id: str = Field(..., alias="VLAN ID")
-    virtual_network: str = Field("", alias="Virtual Network")
+    virtual_network: Optional[str] = Field("", alias="Virtual Network")
 
 
 class ConnectionParamsModel(BaseModel):
