@@ -37,6 +37,11 @@ def action_request():
                     "attributeValue": "10-11",
                     "type": "vlanServiceAttribute",
                 },
+                {
+                    "attributeName": "Virtual Network",
+                    "attributeValue": "10-11",
+                    "type": "vlanServiceAttribute",
+                },
             ],
             "type": "setVlanParameter",
         },
@@ -111,6 +116,11 @@ def create_networking_action_request():
                     },
                     {
                         "attributeName": "VLAN ID",
+                        "attributeValue": vlan_id,
+                        "type": "vlanServiceAttribute",
+                    },
+                    {
+                        "attributeName": "Virtual Network",
                         "attributeValue": vlan_id,
                         "type": "vlanServiceAttribute",
                     },
