@@ -6,6 +6,7 @@ from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
     _validate_vlan_number,
     get_vlan_list,
     iterate_dict_actions_by_vlan_range,
+    patch_virtual_network,
 )
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectionModeEnum,
@@ -76,6 +77,10 @@ def test_iterate_dict_actions_by_vlan_range(create_networking_action_request):
     dict_action2 = create_networking_action_request(
         True, vlan_id="11", mode=ConnectionModeEnum.TRUNK
     )
+
+    for action in (action_request, dict_action1, dict_action2):
+        patch_virtual_network(action)  # removes Virtual Network attribute
+
     new_actions = list(
         iterate_dict_actions_by_vlan_range(
             action_request, is_vlan_range_supported=True, is_multi_vlan_supported=False
