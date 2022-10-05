@@ -22,5 +22,6 @@ setup(
     python_requires="~=3.7",
     version=version_from_file,
     description="QualiSystems Shells Connectivity Flow Package",
+    long_description="QualiSystems Shells Connectivity Flow Package",
     include_package_data=True,
 )
