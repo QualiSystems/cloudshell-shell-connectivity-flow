@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 import pytest
 
 from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
@@ -8,6 +6,9 @@ from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
     _validate_vlan_number,
     get_vlan_list,
     iterate_dict_actions_by_vlan_range,
+)
+from cloudshell.shell.flows.connectivity.models.connectivity_model import (
+    ConnectionModeEnum,
 )
 
 
@@ -65,12 +66,16 @@ def test_get_vlan_list_failed(vlan_str, error, match, vlan_range, multi_vlan):
         )
 
 
-def test_iterate_dict_actions_by_vlan_range(action_request):
-    action_request["connectionParams"]["vlanId"] = "10,11"
-    dict_action1 = deepcopy(action_request)
-    dict_action2 = deepcopy(action_request)
-    dict_action1["connectionParams"]["vlanId"] = "10"
-    dict_action2["connectionParams"]["vlanId"] = "11"
+def test_iterate_dict_actions_by_vlan_range(create_networking_action_request):
+    action_request = create_networking_action_request(
+        True, vlan_id="10,11", mode=ConnectionModeEnum.TRUNK
+    )
+    dict_action1 = create_networking_action_request(
+        True, vlan_id="10", mode=ConnectionModeEnum.TRUNK
+    )
+    dict_action2 = create_networking_action_request(
+        True, vlan_id="11", mode=ConnectionModeEnum.TRUNK
+    )
     new_actions = list(
         iterate_dict_actions_by_vlan_range(
             action_request, is_vlan_range_supported=True, is_multi_vlan_supported=False

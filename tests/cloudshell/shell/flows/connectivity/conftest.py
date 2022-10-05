@@ -32,6 +32,11 @@ def action_request():
                     "attributeValue": "",
                     "type": "vlanServiceAttribute",
                 },
+                {
+                    "attributeName": "VLAN ID",
+                    "attributeValue": "10-11",
+                    "type": "vlanServiceAttribute",
+                },
             ],
             "type": "setVlanParameter",
         },
@@ -102,6 +107,11 @@ def create_networking_action_request():
                     {
                         "attributeName": "CTag",
                         "attributeValue": "",
+                        "type": "vlanServiceAttribute",
+                    },
+                    {
+                        "attributeName": "VLAN ID",
+                        "attributeValue": vlan_id,
                         "type": "vlanServiceAttribute",
                     },
                 ],
