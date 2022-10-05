@@ -65,6 +65,7 @@ def iterate_dict_actions_by_vlan_range(
         vlan_str, is_vlan_range_supported, is_multi_vlan_supported
     ):
         new_dict_action = deepcopy(dict_action)
+        new_dict_action["connectionParams"]["vlanId"] = vlan
         for attr_dict in new_dict_action["connectionParams"]["vlanServiceAttributes"]:
             if attr_dict["attributeName"] == "VLAN ID":
                 attr_dict["attributeValue"] = vlan
