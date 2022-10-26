@@ -80,6 +80,86 @@ def test_connectivity_flow_failed(connectivity_flow, driver_request):
     }
 
 
+def test_request_without_vlan_service(connectivity_flow):
+    request = {
+        "driverRequest": {
+            "actions": [
+                {
+                    "connectionId": "f8f81164-c469-4575-b5eb-96aef13ddb38",
+                    "connectionParams": {
+                        "vlanId": "2",
+                        "mode": "Access",
+                        "vlanServiceAttributes": [
+                            {
+                                "attributeName": "Allocation Ranges",
+                                "attributeValue": "2-4094",
+                                "type": "vlanServiceAttribute",
+                            },
+                            {
+                                "attributeName": "Isolation Level",
+                                "attributeValue": "Exclusive",
+                                "type": "vlanServiceAttribute",
+                            },
+                            {
+                                "attributeName": "Access Mode",
+                                "attributeValue": "Access",
+                                "type": "vlanServiceAttribute",
+                            },
+                            {
+                                "attributeName": "VLAN ID",
+                                "attributeValue": "",
+                                "type": "vlanServiceAttribute",
+                            },
+                            {
+                                "attributeName": "Pool Name",
+                                "attributeValue": "",
+                                "type": "vlanServiceAttribute",
+                            },
+                            {
+                                "attributeName": "Virtual Network",
+                                "attributeValue": "",
+                                "type": "vlanServiceAttribute",
+                            },
+                            {
+                                "attributeName": "Default VLAN",
+                                "attributeValue": "",
+                                "type": "vlanServiceAttribute",
+                            },
+                            {
+                                "attributeName": "QnQ",
+                                "attributeValue": "False",
+                                "type": "vlanServiceAttribute",
+                            },
+                            {
+                                "attributeName": "CTag",
+                                "attributeValue": "",
+                                "type": "vlanServiceAttribute",
+                            },
+                        ],
+                        "type": "setVlanParameter",
+                    },
+                    "connectorAttributes": [
+                        {
+                            "attributeName": "Selected Network",
+                            "attributeValue": "2",
+                            "type": "connectorAttribute",
+                        }
+                    ],
+                    "actionTarget": {
+                        "fullName": "arista1/Chassis 0/Ethernet2",
+                        "fullAddress": "192.168.105.53/CH0/P2",
+                        "type": "actionTarget",
+                    },
+                    "customActionAttributes": [],
+                    "actionId": "f8f81164-c469-4575-b5eb-96aef13ddb38_d275f4fa-7264-4c7f-90ad-fe63a29e2628",  # noqa
+                    "type": "setVlan",
+                }
+            ]
+        }
+    }
+    connectivity_flow.apply_connectivity(json.dumps(request))
+
+
 def test_connectivity_flow_set_vlan(connectivity_flow, driver_request):
     driver_request["driverRequest"]["actions"][0]["type"] = "setVlan"
     res = connectivity_flow.apply_connectivity(json.dumps(driver_request))
