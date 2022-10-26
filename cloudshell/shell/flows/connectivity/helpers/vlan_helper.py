@@ -69,7 +69,17 @@ def iterate_dict_actions_by_vlan_range(
         for attr_dict in new_dict_action["connectionParams"]["vlanServiceAttributes"]:
             if attr_dict["attributeName"] == "VLAN ID":
                 attr_dict["attributeValue"] = vlan
+                break
         yield new_dict_action
+
+
+def patch_vlan_service_vlan_id(dict_action: dict) -> None:
+    """VLAN ID in VLAN service attributes can be empty."""
+    for attr_dict in dict_action["connectionParams"]["vlanServiceAttributes"]:
+        if attr_dict["attributeName"] == "VLAN ID":
+            if not attr_dict["attributeValue"]:
+                attr_dict["attributeValue"] = dict_action["connectionParams"]["vlanId"]
+            break
 
 
 def patch_virtual_network(dict_action: dict) -> None:

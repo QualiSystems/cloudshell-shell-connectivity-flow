@@ -5,6 +5,7 @@ from typing import List, Type
 from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
     iterate_dict_actions_by_vlan_range,
     patch_virtual_network,
+    patch_vlan_service_vlan_id,
 )
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
@@ -41,6 +42,7 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
         dict_actions = json.loads(request)["driverRequest"]["actions"]
         for dict_action in dict_actions:
             patch_virtual_network(dict_action)
+            patch_vlan_service_vlan_id(dict_action)
             yield from iterate_dict_actions_by_vlan_range(
                 dict_action, self.is_vlan_range_supported, self.is_multi_vlan_supported
             )
