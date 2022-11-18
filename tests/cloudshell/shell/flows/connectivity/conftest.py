@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from unittest.mock import Mock
 
@@ -97,8 +99,10 @@ def create_networking_action_request():
         mode: ConnectionModeEnum = ConnectionModeEnum.ACCESS,
         qnq: bool = False,
         port_name: str = "swp2",
+        vm_uuid: str | None = None,
+        vnic: str | None = None,
     ):
-        return {
+        action = {
             "connectionId": "96582265-2728-43aa-bc97-cefb2457ca44",
             "connectionParams": {
                 "vlanId": vlan_id,
@@ -137,6 +141,23 @@ def create_networking_action_request():
             "actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495",
             "type": "setVlan" if set_vlan else "removeVlan",
         }
+        if vm_uuid:
+            action["customActionAttributes"].append(
+                {
+                    "attributeName": "VM_UUID",
+                    "attributeValue": vm_uuid,
+                    "type": "customAttribute",
+                }
+            )
+        if vnic:
+            action["customActionAttributes"].append(
+                {
+                    "attributeName": "Vnic Name",
+                    "attributeValue": vnic,
+                    "type": "customAttribute",
+                }
+            )
+        return action
 
     return creator
 
