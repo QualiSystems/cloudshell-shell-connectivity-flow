@@ -9,6 +9,7 @@ from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
 )
 from cloudshell.shell.flows.connectivity.helpers.vnic_helpers import (
     iterate_dict_actions_by_requested_vnic,
+    validate_vnic_for_vm,
 )
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
@@ -57,9 +58,15 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
             ):
                 actions_split_by_vlan_range.append(new_action)
 
+        actions_split_by_requested_vnic = []
         for dict_action in actions_split_by_vlan_range:
             for new_action in iterate_dict_actions_by_requested_vnic(dict_action):
-                yield new_action
+                actions_split_by_requested_vnic.append(new_action)
+
+        validate_vnic_for_vm(actions_split_by_requested_vnic)
+
+        # for backward compatibility
+        yield from actions_split_by_requested_vnic
 
     def get_actions(self, request: str) -> List[ConnectivityActionModel]:
         return [
