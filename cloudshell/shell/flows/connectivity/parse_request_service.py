@@ -7,6 +7,9 @@ from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
     patch_virtual_network,
     patch_vlan_service_vlan_id,
 )
+from cloudshell.shell.flows.connectivity.helpers.vnic_helpers import (
+    iterate_dict_actions_by_requested_vnic,
+)
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
 )
@@ -40,12 +43,23 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
 
     def _iterate_dict_actions(self, request: str):
         dict_actions = json.loads(request)["driverRequest"]["actions"]
+
+        patched_actions = []
         for dict_action in dict_actions:
             patch_virtual_network(dict_action)
             patch_vlan_service_vlan_id(dict_action)
-            yield from iterate_dict_actions_by_vlan_range(
+            patched_actions.append(dict_action)
+
+        actions_split_by_vlan_range = []
+        for dict_action in patched_actions:
+            for new_action in iterate_dict_actions_by_vlan_range(
                 dict_action, self.is_vlan_range_supported, self.is_multi_vlan_supported
-            )
+            ):
+                actions_split_by_vlan_range.append(new_action)
+
+        for dict_action in actions_split_by_vlan_range:
+            for new_action in iterate_dict_actions_by_requested_vnic(dict_action):
+                yield new_action
 
     def get_actions(self, request: str) -> List[ConnectivityActionModel]:
         return [
