@@ -1,10 +1,19 @@
+from __future__ import annotations
+
 from copy import deepcopy
-from typing import Iterable, List, Set
+from typing import Iterable
 
 from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
+from cloudshell.shell.flows.connectivity.helpers.dict_action_helpers import (
+    get_val_from_list_attrs,
+    set_val_to_list_attrs,
+)
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
 )
+
+VLAN_ID = "VLAN ID"
+VIRTUAL_NETWORK = "Virtual Network"
 
 
 def _validate_vlan_number(number: str):
@@ -22,14 +31,14 @@ def _validate_vlan_range(vlan_range):
         _validate_vlan_number(vlan_number)
 
 
-def _sort_vlans(vlans: Iterable[str]) -> List[str]:
+def _sort_vlans(vlans: Iterable[str]) -> list[str]:
     return sorted(vlans, key=lambda v: tuple(map(int, v.split("-"))))
 
 
 def get_vlan_list(
     vlan_str: str, is_vlan_range_supported: bool, is_multi_vlan_supported: bool
-) -> List[str]:
-    result: Set[str] = set()
+) -> list[str]:
+    result: set[str] = set()
     for vlan_range in map(str.strip, vlan_str.split(",")):
         if "-" not in vlan_range:
             _validate_vlan_number(vlan_range)
@@ -66,20 +75,16 @@ def iterate_dict_actions_by_vlan_range(
     ):
         new_dict_action = deepcopy(dict_action)
         new_dict_action["connectionParams"]["vlanId"] = vlan
-        for attr_dict in new_dict_action["connectionParams"]["vlanServiceAttributes"]:
-            if attr_dict["attributeName"] == "VLAN ID":
-                attr_dict["attributeValue"] = vlan
-                break
+        vlan_service_attrs = get_vlan_service_attrs(new_dict_action)
+        set_val_to_list_attrs(vlan_service_attrs, VLAN_ID, vlan)
         yield new_dict_action
 
 
 def patch_vlan_service_vlan_id(dict_action: dict) -> None:
     """VLAN ID in VLAN service attributes can be empty."""
-    for attr_dict in dict_action["connectionParams"]["vlanServiceAttributes"]:
-        if attr_dict["attributeName"] == "VLAN ID":
-            if not attr_dict["attributeValue"]:
-                attr_dict["attributeValue"] = dict_action["connectionParams"]["vlanId"]
-            break
+    vlan_id = dict_action["connectionParams"]["vlanId"]
+    vlan_service_attrs = get_vlan_service_attrs(dict_action)
+    set_val_to_list_attrs(vlan_service_attrs, VLAN_ID, vlan_id)
 
 
 def patch_virtual_network(dict_action: dict) -> None:
@@ -89,14 +94,12 @@ def patch_virtual_network(dict_action: dict) -> None:
     edit the attribute in Resource Manager.
     By default, Virtual Network contains VLAN ID.
     """
-    vlan_id = None
-    for attr_dict in dict_action["connectionParams"]["vlanServiceAttributes"]:
-        if attr_dict["attributeName"] == "VLAN ID":
-            vlan_id = attr_dict["attributeValue"]
-            break
+    vlan_service_attrs = get_vlan_service_attrs(dict_action)
+    vlan_id = get_val_from_list_attrs(vlan_service_attrs, VLAN_ID)
+    set_val_to_list_attrs(
+        vlan_service_attrs, VIRTUAL_NETWORK, None, set_if_eq=str(vlan_id)
+    )
 
-    for attr_dict in dict_action["connectionParams"]["vlanServiceAttributes"]:
-        if attr_dict["attributeName"] == "Virtual Network":
-            if attr_dict["attributeValue"] == str(vlan_id):
-                attr_dict["attributeValue"] = None
-            break
+
+def get_vlan_service_attrs(dict_action: dict) -> list[dict]:
+    return dict_action["connectionParams"]["vlanServiceAttributes"]
