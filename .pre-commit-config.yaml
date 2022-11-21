@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.32.1
+    rev: v3.2.2
     hooks:
       - id: pyupgrade
         args:
@@ -10,11 +10,11 @@ repos:
     hooks:
       - id: isort
   - repo: https://github.com/python/black
-    rev: 22.3.0
+    rev: 22.10.0
     hooks:
       - id: black
   - repo: https://github.com/pycqa/flake8
-    rev: 4.0.1
+    rev: 5.0.4
     hooks:
       - id: flake8
         additional_dependencies: [
@@ -23,4 +23,6 @@ repos:
           flake8-comprehensions,
           flake8-print,
           flake8-eradicate,
+          flake8-requirements-absolute-imports,
         ]
+        args: [--project-base-module=cloudshell.shell.flows.connectivity]
