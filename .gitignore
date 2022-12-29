@@ -66,3 +66,4 @@ target/
 .pydevproject
 
 .idea/
+.DS_Store
