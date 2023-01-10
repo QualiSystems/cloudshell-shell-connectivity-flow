@@ -23,6 +23,10 @@ class VlanServiceModel(BaseModel):
     ctag: str = Field(..., alias="CTag")
     vlan_id: str = Field(..., alias="VLAN ID")
     virtual_network: Optional[str] = Field("", alias="Virtual Network")
+    promiscuous_mode: Optional[bool] = Field(None, alias="Promiscuous Mode")
+    forged_transmits: Optional[bool] = Field(None, alias="Forged Transmits")
+    mac_changes: Optional[bool] = Field(None, alias="MAC Address Changes")
+    switch_name: Optional[str] = Field(None, alias="Switch Name")
 
 
 class ConnectionParamsModel(BaseModel):
