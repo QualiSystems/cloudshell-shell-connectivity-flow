@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Collection
 from concurrent import futures as ft
 from logging import Logger
 
@@ -67,6 +68,7 @@ class AbstractConnectivityFlow(ABC):
     def apply_connectivity(self, request: str) -> str:
         self._logger.debug(f"Apply connectivity request: {request}")
         actions = self._parse_connectivity_request_service.get_actions(request)
+        self._validate_received_actions(actions)
         set_actions = list(filter(lambda a: a.type is a.type.SET_VLAN, actions))
         remove_actions = list(filter(lambda a: a.type is a.type.REMOVE_VLAN, actions))
         remove_actions = prepare_remove_vlan_actions(set_actions, remove_actions)
@@ -92,3 +94,8 @@ class AbstractConnectivityFlow(ABC):
             result = self._results.get(action.action_id)
             if result and result.success is False:
                 set_actions.remove(action)
+
+    def _validate_received_actions(
+        self, actions: Collection[ConnectivityActionModel]
+    ) -> None:
+        pass
