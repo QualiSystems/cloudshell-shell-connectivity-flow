@@ -47,8 +47,8 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
 
         patched_actions = []
         for dict_action in dict_actions:
-            patch_virtual_network(dict_action)
             patch_vlan_service_vlan_id(dict_action)
+            patch_virtual_network(dict_action)
             patched_actions.append(dict_action)
 
         actions_split_by_vlan_range = []
