@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from concurrent import futures as ft
-from logging import Logger
+
+from cloudshell.logging.context_filters import pass_log_context
 
 from cloudshell.shell.flows.connectivity.helpers.remove_vlans import (
     prepare_remove_vlan_actions,
@@ -19,15 +21,15 @@ from cloudshell.shell.flows.connectivity.parse_request_service import (
     AbstractParseConnectivityService,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class AbstractConnectivityFlow(ABC):
     def __init__(
         self,
         parse_connectivity_request_service: AbstractParseConnectivityService,
-        logger: Logger,
     ):
         self._parse_connectivity_request_service = parse_connectivity_request_service
-        self._logger = logger
         self._results: dict[str, ConnectivityActionResult] = {}
 
     @abstractmethod
@@ -61,19 +63,19 @@ class AbstractConnectivityFlow(ABC):
                     if action.custom_action_attrs.vnic:
                         emsg += f" for vNIC {action.custom_action_attrs.vnic}"
                 emsg = f"{emsg}. Error: {e}"
-                self._logger.exception(emsg)
+                logger.exception(emsg)
                 result = ConnectivityActionResult.fail_result(action, emsg)
             self._results[result.actionId] = result
 
     def apply_connectivity(self, request: str) -> str:
-        self._logger.debug(f"Apply connectivity request: {request}")
+        logger.debug(f"Apply connectivity request: {request}")
         actions = self._parse_connectivity_request_service.get_actions(request)
         self._validate_received_actions(actions)
         set_actions = list(filter(lambda a: a.type is a.type.SET_VLAN, actions))
         remove_actions = list(filter(lambda a: a.type is a.type.REMOVE_VLAN, actions))
         remove_actions = prepare_remove_vlan_actions(set_actions, remove_actions)
 
-        with ft.ThreadPoolExecutor() as executor:
+        with ft.ThreadPoolExecutor(initializer=pass_log_context()) as executor:
             remove_vlan_futures = {
                 executor.submit(self._remove_vlan, action): action
                 for action in remove_actions

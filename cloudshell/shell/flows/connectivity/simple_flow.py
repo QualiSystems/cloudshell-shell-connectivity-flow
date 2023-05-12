@@ -1,6 +1,5 @@
 import logging
-from logging import Logger
-from typing import Callable, Optional
+from typing import Callable
 
 from cloudshell.shell.flows.connectivity.exceptions import ApplyConnectivityException
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
@@ -14,12 +13,13 @@ from cloudshell.shell.flows.connectivity.parse_request_service import (
     ParseConnectivityRequestService,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def apply_connectivity_changes(
     request: str,
     add_vlan_action: Callable[[ConnectivityActionModel], ConnectivityActionResult],
     remove_vlan_action: Callable[[ConnectivityActionModel], ConnectivityActionResult],
-    logger: Optional[Logger] = None,
 ) -> str:
     """Standard implementation for the apply_connectivity_changes operation.
 
@@ -33,14 +33,9 @@ def apply_connectivity_changes(
             This action will be called for VLAN remove operations
     :param Function -> ConnectivityActionResult add_vlan_action:
             This action will be called for VLAN add operations
-    :param logger: logger to use for the operation, if you don't provide a logger,
-            a default Python logger will be used
     :return Returns a driver action result object,
             this can be returned to CloudShell server by the command result
     """
-    if not logger:
-        logger = logging.getLogger("apply_connectivity_changes")
-
     if request is None or request == "":
         raise ApplyConnectivityException("Request is None or empty")
 

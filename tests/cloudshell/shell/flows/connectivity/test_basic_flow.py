@@ -25,7 +25,7 @@ def parse_connectivity_request_service():
 
 
 @pytest.fixture()
-def connectivity_flow(parse_connectivity_request_service, logger):
+def connectivity_flow(parse_connectivity_request_service):
     class ConnectivityFlow(AbstractConnectivityFlow):
         IS_SUCCESS = True
 
@@ -42,7 +42,7 @@ def connectivity_flow(parse_connectivity_request_service, logger):
         _set_vlan = _generic_change_vlan_fn
         _remove_vlan = _generic_change_vlan_fn
 
-    return ConnectivityFlow(parse_connectivity_request_service, logger)
+    return ConnectivityFlow(parse_connectivity_request_service)
 
 
 def test_connectivity_flow(connectivity_flow, driver_request):
@@ -175,22 +175,20 @@ def test_connectivity_flow_set_vlan(connectivity_flow, driver_request):
     )
 
 
-def test_connectivity_flow_abstract_methods(parse_connectivity_request_service, logger):
+def test_connectivity_flow_abstract_methods(parse_connectivity_request_service):
     with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-        AbstractConnectivityFlow(parse_connectivity_request_service, logger)
+        AbstractConnectivityFlow(parse_connectivity_request_service)
 
 
-def test_abstract_methods_raises(
-    parse_connectivity_request_service, logger, action_model
-):
+def test_abstract_methods_raises(parse_connectivity_request_service, action_model):
     class TestClass(AbstractConnectivityFlow):
-        def _set_vlan(self, action: ConnectivityActionModel) -> str:
+        def _set_vlan(self, action: ConnectivityActionModel):
             return super()._set_vlan(action_model)
 
-        def _remove_vlan(self, action: ConnectivityActionModel) -> str:
+        def _remove_vlan(self, action: ConnectivityActionModel):
             return super()._remove_vlan(action_model)
 
-    inst = TestClass(parse_connectivity_request_service, logger)
+    inst = TestClass(parse_connectivity_request_service)
     with pytest.raises(NotImplementedError):
         inst._set_vlan(action_model)
 
@@ -229,7 +227,7 @@ def test_do_not_run_set_vlan_if_remove_vlan_failed(
 
 
 def test_do_run_set_vlan_if_remove_vlan_success(
-    create_networking_action_request, parse_connectivity_request_service, logger
+    create_networking_action_request, parse_connectivity_request_service
 ):
     def return_success_result(action):
         return ConnectivityActionResult.success_result(action, "successful")
@@ -241,7 +239,7 @@ def test_do_run_set_vlan_if_remove_vlan_success(
     action = create_networking_action_request(set_vlan=True)
     request = create_driver_str_request(action)
 
-    flow = TestedConnectivityFlow(parse_connectivity_request_service, logger)
+    flow = TestedConnectivityFlow(parse_connectivity_request_service)
     res = flow.apply_connectivity(request)
 
     assert res
@@ -250,10 +248,10 @@ def test_do_run_set_vlan_if_remove_vlan_success(
 
 
 def test_failed_response_if_remove_vlan_failed(
-    create_networking_action_request, parse_connectivity_request_service, logger
+    create_networking_action_request, parse_connectivity_request_service
 ):
     class TestedConnectivityFlow(AbstractConnectivityFlow):
-        def _remove_vlan(self, action: ConnectivityActionModel) -> str:
+        def _remove_vlan(self, a: ConnectivityActionModel):
             1 / 0
 
         _set_vlan = None
@@ -261,7 +259,7 @@ def test_failed_response_if_remove_vlan_failed(
     action = create_networking_action_request(set_vlan=False)
     request = create_driver_str_request(action)
 
-    flow = TestedConnectivityFlow(parse_connectivity_request_service, logger)
+    flow = TestedConnectivityFlow(parse_connectivity_request_service)
     res = flow.apply_connectivity(request)
 
     assert res

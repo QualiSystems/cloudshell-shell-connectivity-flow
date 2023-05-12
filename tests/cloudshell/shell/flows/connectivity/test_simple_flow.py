@@ -21,7 +21,7 @@ def _remove_vlan_action(action: ConnectivityActionModel) -> ConnectivityActionRe
     return ConnectivityActionResult.success_result(action, "success msg")
 
 
-def test_apply_connectivity_changes(logger, action_request):
+def test_apply_connectivity_changes(action_request):
     action_req_remove = action_request
     action_req_set = deepcopy(action_request)
     action_req_set["type"] = "setVlan"
@@ -31,7 +31,7 @@ def test_apply_connectivity_changes(logger, action_request):
     )
 
     res = apply_connectivity_changes(
-        driver_request, _add_vlan_action, _remove_vlan_action, logger
+        driver_request, _add_vlan_action, _remove_vlan_action
     )
     assert json.loads(res) == {
         "driverResponse": {

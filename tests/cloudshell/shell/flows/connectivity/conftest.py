@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import Mock
 
 import pytest
 
@@ -9,11 +8,6 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectionModeEnum,
     ConnectivityActionModel,
 )
-
-
-@pytest.fixture()
-def logger():
-    return Mock(name="logger")
 
 
 @pytest.fixture()
