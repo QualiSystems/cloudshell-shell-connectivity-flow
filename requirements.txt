@@ -1,2 +1,2 @@
-cloudshell-logging>=1,<2
+cloudshell-logging~=2.0
 pydantic>=1.7.2,<1.11
