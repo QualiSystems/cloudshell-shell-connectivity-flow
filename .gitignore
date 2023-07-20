@@ -67,3 +67,4 @@ target/
 
 .idea/
 .DS_Store
+build_num.txt
