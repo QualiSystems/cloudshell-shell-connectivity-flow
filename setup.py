@@ -13,13 +13,13 @@ with open("test_requirements.txt") as f_tests:
 
 setup(
     name="cloudshell-shell-connectivity-flow",
-    url="http://www.qualisystems.com/",
+    url="https://www.quali.com/",
     author="QualiSystems",
     author_email="info@qualisystems.com",
     packages=find_packages(),
     install_requires=required,
     tests_require=required_for_tests,
-    python_requires="~=3.7",
+    python_requires="~=3.9",
     version=version_from_file,
     description="QualiSystems Shells Connectivity Flow Package",
     long_description="QualiSystems Shells Connectivity Flow Package",

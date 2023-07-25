@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -40,6 +40,14 @@ class ConnectivityActionResult(BaseModel):
         cls, action: ConnectivityActionModel, msg: str
     ) -> "ConnectivityActionResult":
         return cls(**cls._action_dict(action), errorMessage=msg, success=False)
+
+    @classmethod
+    def skip_result(
+        cls, action: ConnectivityActionModel, msg: Optional[str] = None
+    ) -> "ConnectivityActionResult":
+        if msg is None:
+            msg = "Another action failed. Skipping this action"
+        return cls.fail_result(action, msg)
 
 
 class DriverResponse(BaseModel):
