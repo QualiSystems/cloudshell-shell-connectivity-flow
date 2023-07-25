@@ -18,6 +18,26 @@ def list_attrs_to_dict(list_attrs: List[Dict[str, str]]) -> Dict[str, str]:
     return {attr["attributeName"]: attr["attributeValue"] for attr in list_attrs}
 
 
+def is_set_action(action: "ConnectivityActionModel") -> bool:
+    return action.type is ConnectivityTypeEnum.SET_VLAN
+
+
+def is_remove_action(action: "ConnectivityActionModel") -> bool:
+    return action.type is ConnectivityTypeEnum.REMOVE_VLAN
+
+
+def get_vm_uuid(action: "ConnectivityActionModel") -> str:
+    return action.custom_action_attrs.vm_uuid
+
+
+def get_vnic(action: "ConnectivityActionModel") -> str:
+    return action.custom_action_attrs.vnic
+
+
+def get_vm_uuid_or_target(action: "ConnectivityActionModel") -> str:
+    return get_vm_uuid(action) or action.action_target.name
+
+
 class VlanServiceModel(BaseModel):
     qnq: bool = Field(..., alias="QnQ")
     ctag: str = Field(..., alias="CTag")

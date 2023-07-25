@@ -8,8 +8,8 @@ from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
     patch_vlan_service_vlan_id,
 )
 from cloudshell.shell.flows.connectivity.helpers.vnic_helpers import (
+    iterate_dict_actions_by_interface,
     iterate_dict_actions_by_requested_vnic,
-    validate_vnic_for_vm,
 )
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
@@ -63,10 +63,15 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
             for new_action in iterate_dict_actions_by_requested_vnic(dict_action):
                 actions_split_by_requested_vnic.append(new_action)
 
-        validate_vnic_for_vm(actions_split_by_requested_vnic)
+        actions_split_by_iface = []
+        # for Cloud Provides in remove actions if in set action was specified several
+        # vNICs for the same VLAN Service
+        for dict_action in actions_split_by_requested_vnic:
+            for new_action in iterate_dict_actions_by_interface(dict_action):
+                actions_split_by_iface.append(new_action)
 
         # for backward compatibility
-        yield from actions_split_by_requested_vnic
+        yield from actions_split_by_iface
 
     def get_actions(self, request: str) -> List[ConnectivityActionModel]:
         return [

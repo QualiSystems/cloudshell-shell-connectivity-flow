@@ -65,3 +65,15 @@ def test_action_model_with_switch_name(action_request):
     )
     action = ConnectivityActionModel.parse_obj(action_request)
     assert action.connection_params.vlan_service_attrs.switch_name == "switch_name"
+
+
+def test_actions_equals(create_networking_action_request):
+    action1 = create_networking_action_request(True, vm_uuid="vm1", vnic="vnic1")
+    action2 = create_networking_action_request(True, vm_uuid="vm1", vnic="vnic1")
+    assert action1 == action2
+
+
+def test_actions_not_equals(create_networking_action_request):
+    action1 = create_networking_action_request(True, vm_uuid="vm1", vnic="vnic1")
+    action2 = create_networking_action_request(True, vm_uuid="vm1", vnic="vnic2")
+    assert action1 != action2
