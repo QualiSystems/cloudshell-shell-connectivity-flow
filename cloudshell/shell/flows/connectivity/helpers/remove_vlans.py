@@ -2,16 +2,13 @@ from copy import deepcopy
 from itertools import chain, groupby
 from typing import Iterable, List
 
-from cloudshell.shell.flows.connectivity.models.connectivity_model import (
-    ConnectivityActionModel,
-    ConnectivityTypeEnum,
-)
+from ..models.connectivity_model import ConnectivityActionModel, ConnectivityTypeEnum
 
 
 def _grouped_actions(
     actions: Iterable[ConnectivityActionModel],
 ) -> List[List[ConnectivityActionModel]]:
-    def key_fn(action):
+    def key_fn(action: ConnectivityActionModel) -> tuple[str, str, str]:
         return (
             action.action_target.name,
             action.custom_action_attrs.vm_uuid,

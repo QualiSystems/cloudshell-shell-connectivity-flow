@@ -1,3 +1,4 @@
 cloudshell-logging~=2.0
 pydantic~=1.7
 attrs>=22,<23.2
+typing_extensions>=4

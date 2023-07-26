@@ -1,17 +1,10 @@
 import logging
 from typing import Callable
 
-from cloudshell.shell.flows.connectivity.exceptions import ApplyConnectivityException
-from cloudshell.shell.flows.connectivity.models.connectivity_model import (
-    ConnectivityActionModel,
-)
-from cloudshell.shell.flows.connectivity.models.driver_response import (
-    ConnectivityActionResult,
-    DriverResponseRoot,
-)
-from cloudshell.shell.flows.connectivity.parse_request_service import (
-    ParseConnectivityRequestService,
-)
+from .exceptions import ApplyConnectivityException
+from .models.connectivity_model import ConnectivityActionModel, ConnectivityTypeEnum
+from .models.driver_response import ConnectivityActionResult, DriverResponseRoot
+from .parse_request_service import ParseConnectivityRequestService
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +39,10 @@ def apply_connectivity_changes(
     results = []
     for action in actions:
         logger.info(f"Action: {actions}")
-        if action.type is action.type.SET_VLAN:
+        if action.type is ConnectivityTypeEnum.SET_VLAN:
             action_result = add_vlan_action(action)
         else:
             action_result = remove_vlan_action(action)
         results.append(action_result)
 
-    return DriverResponseRoot.prepare_response(results).json()
+    return str(DriverResponseRoot.prepare_response(results).json())
