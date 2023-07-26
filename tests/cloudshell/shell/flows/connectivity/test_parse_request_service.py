@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import json
-from typing import List
 
 import pytest
 
@@ -22,8 +23,8 @@ def test_abstract_parse_connectivity_request_service_initialize():
 
 def test_abstract_parse_connectivity_request_service_get_actions_raises(driver_request):
     class TestClass(AbstractParseConnectivityService):
-        def get_actions(self, request: str) -> List[ConnectivityActionModel]:
-            super().get_actions(request)
+        def get_actions(self, request: str) -> list[ConnectivityActionModel]:
+            return super().get_actions(request)
 
     service = TestClass()
     with pytest.raises(NotImplementedError):
@@ -40,7 +41,7 @@ def test_parse_connectivity_request_service(driver_request):
     assert first.connection_params.vlan_id == "10"
     assert second.connection_params.vlan_id == "11"
     assert first.action_id == second.action_id
-    assert first.connection_params.vlan_service_attrs.virtual_network is None
+    assert not first.connection_params.vlan_service_attrs.virtual_network
 
 
 def test_parse_connectivity_without_vlan_id_in_vlan_service(driver_request):
@@ -58,5 +59,5 @@ def test_parse_connectivity_without_vlan_id_in_vlan_service(driver_request):
     assert len(actions) == 1
     action = actions[0]
     assert action.connection_params.vlan_id == "10-11"
-    assert action.connection_params.vlan_service_attrs.virtual_network is None
+    assert not action.connection_params.vlan_service_attrs.virtual_network
     assert action.connection_params.vlan_service_attrs.vlan_id == "10-11"

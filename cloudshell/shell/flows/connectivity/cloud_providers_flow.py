@@ -26,14 +26,14 @@ class AbcCloudProviderConnectivityFlow(AbcConnectivityFlow):
         return name.rsplit(" ", 1)[-1]
 
     def _prepare_remove_actions(
-        self, actions: list[ConnectivityActionModel]
+        self, actions: Collection[ConnectivityActionModel]
     ) -> Collection[Collection[ConnectivityActionModel]]:
         remove_actions_groups = [(a,) for a in list(filter(is_remove_action, actions))]
         return remove_actions_groups
 
     def _prepare_set_actions(
-        self, actions: list[ConnectivityActionModel]
-    ) -> Collection[Collection[ConnectivityActionModel]]:
+        self, actions: Collection[ConnectivityActionModel]
+    ) -> list[tuple[ConnectivityActionModel, ...]]:
         """Prepare set actions for a Cloud Provider.
 
         Check that we can connect actions to the VM.
@@ -45,7 +45,7 @@ class AbcCloudProviderConnectivityFlow(AbcConnectivityFlow):
         set_actions = list(filter(is_set_action, actions))
 
         actions_by_vm = _group_actions_by_vm(set_actions)
-        set_actions_groups: list[Collection[ConnectivityActionModel]] = []
+        set_actions_groups: list[tuple[ConnectivityActionModel, ...]] = []
         for vm_uuid, actions in actions_by_vm.items():
             vm = self.get_target(vm_uuid)
             self._replace_vnic_names_with_indexes(actions, vm)
@@ -76,7 +76,7 @@ def _group_actions_by_vm(
     actions: Collection[ConnectivityActionModel],
 ) -> dict[str, list[ConnectivityActionModel]]:
     return {
-        vm_uuid: tuple(grouped_actions)
+        vm_uuid: list(grouped_actions)
         for vm_uuid, grouped_actions in groupby(
             sorted(actions, key=get_vm_uuid), key=get_vm_uuid
         )

@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from abc import ABC
 from itertools import chain
-from typing import Any, Collection
+from typing import Collection
 
-from cloudshell.shell.flows.connectivity.abstrace_flow import AbcConnectivityFlow
-from cloudshell.shell.flows.connectivity.helpers.remove_vlans import (
-    prepare_remove_vlan_actions,
-)
-from cloudshell.shell.flows.connectivity.models.connectivity_model import (
+from .abstrace_flow import AbcConnectivityFlow
+from .helpers.remove_vlans import prepare_remove_vlan_actions
+from .models.connectivity_model import (
     ConnectivityActionModel,
     is_remove_action,
     is_set_action,
@@ -17,8 +15,8 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
 
 class AbcDeviceConnectivityFlow(AbcConnectivityFlow, ABC):
     def _prepare_remove_actions(
-        self, actions: list[ConnectivityActionModel]
-    ) -> Collection[Collection[ConnectivityActionModel], Any]:
+        self, actions: Collection[ConnectivityActionModel]
+    ) -> Collection[Collection[ConnectivityActionModel]]:
         set_actions = list(filter(is_set_action, actions))
         remove_actions = list(filter(is_remove_action, actions))
         # add remove actions for cleaning all VLANs on the port
@@ -28,8 +26,8 @@ class AbcDeviceConnectivityFlow(AbcConnectivityFlow, ABC):
         return remove_actions_groups
 
     def _prepare_set_actions(
-        self, actions: list[ConnectivityActionModel]
-    ) -> Collection[Collection[ConnectivityActionModel], Any]:
+        self, actions: Collection[ConnectivityActionModel]
+    ) -> Collection[Collection[ConnectivityActionModel]]:
         # get failed actions
         failed_action_ids = {
             result.actionId

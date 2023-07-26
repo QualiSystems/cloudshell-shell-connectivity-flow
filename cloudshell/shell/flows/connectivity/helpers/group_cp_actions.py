@@ -4,19 +4,15 @@ from collections.abc import Collection
 from itertools import filterfalse
 from typing import TYPE_CHECKING
 
-from cloudshell.shell.flows.connectivity.models.connectivity_model import (
-    ConnectivityActionModel,
-    get_vm_uuid,
-    get_vnic,
-)
+from ..models.connectivity_model import ConnectivityActionModel, get_vm_uuid, get_vnic
 
 if TYPE_CHECKING:
-    from cloudshell.shell.flows.connectivity.cloud_providers_flow import VnicInfo
+    from ..cloud_providers_flow import VnicInfo
 
 
 def group_actions(
     actions: Collection[ConnectivityActionModel], vnics: Collection[VnicInfo]
-) -> Collection[Collection[ConnectivityActionModel]]:
+) -> list[tuple[ConnectivityActionModel, ...]]:
     """Group Cloud Provider's actions.
 
     Return groups of actions:
@@ -78,22 +74,24 @@ def group_actions(
             )
         prev_index = vnic_index
 
-    groups_actions = [(a,) for a in actions_to_replace_vnics]
+    groups_actions: list[tuple[ConnectivityActionModel, ...]] = [
+        (a,) for a in actions_to_replace_vnics
+    ]
     if actions_to_create_new_vnics:
         groups_actions.append(tuple(actions_to_create_new_vnics))
 
     return groups_actions
 
 
-def _sort_actions_by_vnic(action: ConnectivityActionModel) -> int | float:
+def _sort_actions_by_vnic(action: ConnectivityActionModel) -> tuple[int, int]:
     """Sort actions by vNIC index.
 
     First actions with vNIC specified in increasing order, then actions without
     vNIC specified.
     """
-    result = get_vnic(action)
-    if result:
-        result = int(result)
+    str_vnic = get_vnic(action)
+    if str_vnic:
+        result = (0, int(str_vnic))
     else:
-        result = float("inf")
+        result = (1, 0)
     return result

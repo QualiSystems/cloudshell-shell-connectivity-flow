@@ -1,19 +1,19 @@
 import json
 from abc import ABC, abstractmethod
+from collections.abc import Generator
 from typing import List, Type
 
-from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
+from .helpers.types import ActionDict
+from .helpers.vlan_helper import (
     iterate_dict_actions_by_vlan_range,
     patch_virtual_network,
     patch_vlan_service_vlan_id,
 )
-from cloudshell.shell.flows.connectivity.helpers.vnic_helpers import (
+from .helpers.vnic_helpers import (
     iterate_dict_actions_by_interface,
     iterate_dict_actions_by_requested_vnic,
 )
-from cloudshell.shell.flows.connectivity.models.connectivity_model import (
-    ConnectivityActionModel,
-)
+from .models.connectivity_model import ConnectivityActionModel
 
 
 class AbstractParseConnectivityService(ABC):
@@ -42,7 +42,7 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
         self.is_multi_vlan_supported = is_multi_vlan_supported
         self.connectivity_model_cls = connectivity_model_cls
 
-    def _iterate_dict_actions(self, request: str):
+    def _iterate_dict_actions(self, request: str) -> Generator[ActionDict, None, None]:
         dict_actions = json.loads(request)["driverRequest"]["actions"]
 
         patched_actions = []
@@ -63,7 +63,7 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
             for new_action in iterate_dict_actions_by_requested_vnic(dict_action):
                 actions_split_by_requested_vnic.append(new_action)
 
-        actions_split_by_iface = []
+        actions_split_by_iface: list[ActionDict] = []
         # for Cloud Provides in remove actions if in set action was specified several
         # vNICs for the same VLAN Service
         for dict_action in actions_split_by_requested_vnic:

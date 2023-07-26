@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from collections import defaultdict
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from itertools import chain
@@ -12,7 +12,7 @@ from typing import Any
 
 from attrs import define, field
 
-from cloudshell.logging.context_filters import pass_log_context
+from cloudshell.logging.context_filters import pass_log_context  # type: ignore
 
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
@@ -106,7 +106,7 @@ class AbcConnectivityFlow:
 
     def _execute_actions(
         self,
-        fn,
+        fn: Callable[[ConnectivityActionModel, Any], ConnectivityActionResult],
         actions: Collection[ConnectivityActionModel],
     ) -> None:
         action_targets = {action.action_target.name for action in actions}
@@ -149,8 +149,8 @@ class AbcConnectivityFlow:
         for action in chain.from_iterable(set_actions):  # type: ConnectivityActionModel
             if action.action_id in failed_action_ids:
                 new_action: ConnectivityActionModel = deepcopy(action)
-                new_action.connection_params.vlan_id = None
-                new_action.connection_params.vlan_service_attrs.vlan_id = None
+                new_action.connection_params.vlan_id = ""
+                new_action.connection_params.vlan_service_attrs.vlan_id = ""
                 new_action.type = ConnectivityTypeEnum.REMOVE_VLAN
 
                 if new_action not in new_remove_actions:
@@ -163,8 +163,8 @@ class AbcConnectivityFlow:
 
     @abstractmethod
     def _prepare_remove_actions(
-        self, actions: list[ConnectivityActionModel]
-    ) -> Collection[Collection[ConnectivityActionModel], Any]:
+        self, actions: Collection[ConnectivityActionModel]
+    ) -> Collection[Collection[ConnectivityActionModel]]:
         """Prepare remove actions.
 
         Return list of actions in groups.
@@ -175,8 +175,8 @@ class AbcConnectivityFlow:
 
     @abstractmethod
     def _prepare_set_actions(
-        self, actions: list[ConnectivityActionModel]
-    ) -> Collection[Collection[ConnectivityActionModel], Any]:
+        self, actions: Collection[ConnectivityActionModel]
+    ) -> Collection[Collection[ConnectivityActionModel]]:
         """Prepare set actions.
 
         Return list of actions in groups.
@@ -205,7 +205,9 @@ class AbcConnectivityFlow:
                 else:
                     single_results[action_id] = result
 
-        return DriverResponseRoot.prepare_response(list(single_results.values())).json()
+        return str(
+            DriverResponseRoot.prepare_response(list(single_results.values())).json()
+        )
 
 
 def _get_response_emsg(action: ConnectivityActionModel, e: Exception) -> str:
