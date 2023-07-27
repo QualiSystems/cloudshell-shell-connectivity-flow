@@ -4,10 +4,14 @@ from collections.abc import Collection
 from itertools import filterfalse
 from typing import TYPE_CHECKING
 
-from ..models.connectivity_model import ConnectivityActionModel, get_vm_uuid, get_vnic
+from cloudshell.shell.flows.connectivity.models.connectivity_model import (
+    ConnectivityActionModel,
+    get_vm_uuid,
+    get_vnic,
+)
 
 if TYPE_CHECKING:
-    from ..cloud_providers_flow import VnicInfo
+    from cloudshell.shell.flows.connectivity.cloud_providers_flow import VnicInfo
 
 
 def group_actions(
@@ -89,8 +93,7 @@ def _sort_actions_by_vnic(action: ConnectivityActionModel) -> tuple[int, int]:
     First actions with vNIC specified in increasing order, then actions without
     vNIC specified.
     """
-    str_vnic = get_vnic(action)
-    if str_vnic:
+    if str_vnic := get_vnic(action):
         result = (0, int(str_vnic))
     else:
         result = (1, 0)

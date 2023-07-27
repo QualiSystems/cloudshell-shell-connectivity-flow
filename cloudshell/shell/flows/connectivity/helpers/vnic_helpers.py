@@ -5,8 +5,8 @@ from collections.abc import Generator
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from ..exceptions import ConnectivityException
 from .dict_action_helpers import get_val_from_list_attrs, set_val_to_list_attrs
+from cloudshell.shell.flows.connectivity.exceptions import ConnectivityException
 
 if TYPE_CHECKING:
     from .types import ActionDict, ActionsAttributeDict

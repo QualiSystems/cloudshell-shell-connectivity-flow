@@ -3,8 +3,6 @@ from unittest.mock import Mock
 
 import pytest
 
-from .conftest import create_driver_str_request
-
 from cloudshell.shell.flows.connectivity.basic_flow import AbstractConnectivityFlow
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
@@ -15,6 +13,10 @@ from cloudshell.shell.flows.connectivity.models.driver_response import (
 from cloudshell.shell.flows.connectivity.parse_request_service import (
     ParseConnectivityRequestService,
 )
+
+
+def create_driver_str_request(*action_requests):
+    return json.dumps({"driverRequest": {"actions": list(action_requests)}})
 
 
 @pytest.fixture()

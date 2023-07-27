@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 from copy import deepcopy
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
-from ..exceptions import VLANHandlerException
-from ..models.connectivity_model import ConnectionModeEnum, ConnectivityActionModel
 from .dict_action_helpers import get_val_from_list_attrs, set_val_to_list_attrs
+from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
+from cloudshell.shell.flows.connectivity.models.connectivity_model import (
+    ConnectionModeEnum,
+    ConnectivityActionModel,
+)
 
 if TYPE_CHECKING:
     from .types import ActionDict, ActionsAttributeDict

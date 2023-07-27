@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-
 import pytest
 
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
@@ -154,7 +152,3 @@ def create_networking_action_request():
         return action
 
     return creator
-
-
-def create_driver_str_request(*action_requests):
-    return json.dumps({"driverRequest": {"actions": list(action_requests)}})

@@ -7,11 +7,11 @@ from .connectivity_model import ConnectivityActionModel
 
 
 class ConnectivityActionResult(BaseModel):
-    actionId: str
+    actionId: str  # noqa: N815
     type: str  # noqa: A003
-    updatedInterface: str
-    infoMessage: str = ""
-    errorMessage: str = ""
+    updatedInterface: str  # noqa: N815
+    infoMessage: str = ""  # noqa: N815
+    errorMessage: str = ""  # noqa: N815
     success: bool = True
 
     @staticmethod
@@ -48,11 +48,11 @@ class ConnectivityActionResult(BaseModel):
 
 
 class DriverResponse(BaseModel):
-    actionResults: list[ConnectivityActionResult]
+    actionResults: list[ConnectivityActionResult]  # noqa: N815
 
 
 class DriverResponseRoot(BaseModel):
-    driverResponse: DriverResponse
+    driverResponse: DriverResponse  # noqa: N815
 
     @classmethod
     def prepare_response(cls, action_results: list[ConnectivityActionResult]) -> Self:

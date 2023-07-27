@@ -1,7 +1,6 @@
 import json
 from abc import ABC, abstractmethod
 from collections.abc import Generator
-from typing import List, Type
 
 from .helpers.types import ActionDict
 from .helpers.vlan_helper import (
@@ -18,7 +17,7 @@ from .models.connectivity_model import ConnectivityActionModel
 
 class AbstractParseConnectivityService(ABC):
     @abstractmethod
-    def get_actions(self, request: str) -> List[ConnectivityActionModel]:
+    def get_actions(self, request: str) -> list[ConnectivityActionModel]:
         raise NotImplementedError()
 
 
@@ -27,7 +26,7 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
         self,
         is_vlan_range_supported: bool,
         is_multi_vlan_supported: bool,
-        connectivity_model_cls: Type[ConnectivityActionModel] = ConnectivityActionModel,
+        connectivity_model_cls: type[ConnectivityActionModel] = ConnectivityActionModel,
     ):
         """Parse a connectivity request and returns connectivity actions.
 
@@ -73,7 +72,7 @@ class ParseConnectivityRequestService(AbstractParseConnectivityService):
         # for backward compatibility
         yield from actions_split_by_iface
 
-    def get_actions(self, request: str) -> List[ConnectivityActionModel]:
+    def get_actions(self, request: str) -> list[ConnectivityActionModel]:
         return [
             self.connectivity_model_cls.parse_obj(da)
             for da in self._iterate_dict_actions(request)

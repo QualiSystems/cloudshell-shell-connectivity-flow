@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -14,7 +14,7 @@ class ConnectionModeEnum(Enum):
     TRUNK = "Trunk"
 
 
-def list_attrs_to_dict(list_attrs: List[Dict[str, str]]) -> Dict[str, str]:
+def list_attrs_to_dict(list_attrs: list[dict[str, str]]) -> dict[str, str]:
     return {attr["attributeName"]: attr["attributeValue"] for attr in list_attrs}
 
 
@@ -76,7 +76,7 @@ class CustomActionAttrsModel(BaseModel):
     vnic: str = Field("", alias="Vnic Name")
 
     @validator("vnic")
-    def strip_vnic(cls, v: str) -> str:
+    def strip_vnic(cls, v: str) -> str:  # noqa: N805
         return v.strip()
 
 

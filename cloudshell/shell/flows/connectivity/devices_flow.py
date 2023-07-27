@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC
+from collections.abc import Collection
 from itertools import chain
-from typing import Collection
 
 from .abstrace_flow import AbcConnectivityFlow
 from .helpers.remove_vlans import prepare_remove_vlan_actions
