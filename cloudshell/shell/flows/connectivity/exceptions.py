@@ -1,4 +1,4 @@
-class ConnectivityException(Exception):
+class ConnectivityException(Exception):  # noqa: N818
     pass
 
 

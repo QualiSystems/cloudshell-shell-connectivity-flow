@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Collection
 from itertools import groupby
-from typing import Any, Collection
+from typing import Any
 
 from attrs import define
 

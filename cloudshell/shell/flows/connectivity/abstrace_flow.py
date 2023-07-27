@@ -189,8 +189,7 @@ class AbcConnectivityFlow:
         single_results: dict[str, ConnectivityActionResult] = {}
         for action_id, results in self.results.items():
             for result in results:
-                existed_result = single_results.get(action_id)
-                if existed_result:
+                if existed_result := single_results.get(action_id):
                     existed_result.success = existed_result.success and result.success
                     existed_result.infoMessage = (
                         f"{existed_result.infoMessage}\n{result.infoMessage}"
