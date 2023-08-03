@@ -23,7 +23,7 @@ def _validate_vlan_number(str_number: str) -> None:
         number = int(str_number)
     except ValueError:
         raise VLANHandlerException(f"VLAN {str_number} isn't a integer")
-    if number > 4094 or number < 1:
+    if not 1 <= number <= 4094:
         raise VLANHandlerException(f"Wrong VLAN detected {number}")
 
 
