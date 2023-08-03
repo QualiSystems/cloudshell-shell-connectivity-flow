@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from typing import Any
+
+from attrs import define
 
 from cloudshell.shell.flows.connectivity.devices_flow import AbcDeviceConnectivityFlow
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
@@ -13,7 +16,15 @@ from cloudshell.shell.flows.connectivity.models.driver_response import (
 )
 
 
+@define
 class AbstractConnectivityFlow(AbcDeviceConnectivityFlow, ABC):
+    def __attrs_post_init__(self):
+        depr_msg = (
+            "This class is deprecated. Use AbcDeviceConnectivityFlow or "
+            "AbcCloudProviderConnectivityFlow"
+        )
+        warnings.warn(depr_msg, DeprecationWarning, stacklevel=2)
+
     @abstractmethod
     def _set_vlan(self, action: ConnectivityActionModel) -> ConnectivityActionResult:
         # deprecated
