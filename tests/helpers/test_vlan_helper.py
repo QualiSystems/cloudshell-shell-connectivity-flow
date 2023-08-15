@@ -11,6 +11,7 @@ from cloudshell.shell.flows.connectivity.helpers.vlan_helper import (
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectionModeEnum,
 )
+from tests.base import create_net_ad
 
 
 @pytest.mark.parametrize(
@@ -67,15 +68,15 @@ def test_get_vlan_list_failed(vlan_str, error, match, vlan_range, multi_vlan):
         )
 
 
-def test_iterate_dict_actions_by_vlan_range(create_networking_action_request):
-    action_request = create_networking_action_request(
-        True, vlan_id="10,11", mode=ConnectionModeEnum.TRUNK
+def test_iterate_dict_actions_by_vlan_range():
+    action_request = create_net_ad(
+        vlan_id="10,11", mode=ConnectionModeEnum.TRUNK, uniq_id=False
     )
-    dict_action1 = create_networking_action_request(
-        True, vlan_id="10", mode=ConnectionModeEnum.TRUNK
+    dict_action1 = create_net_ad(
+        vlan_id="10", mode=ConnectionModeEnum.TRUNK, uniq_id=False
     )
-    dict_action2 = create_networking_action_request(
-        True, vlan_id="11", mode=ConnectionModeEnum.TRUNK
+    dict_action2 = create_net_ad(
+        vlan_id="11", mode=ConnectionModeEnum.TRUNK, uniq_id=False
     )
 
     for action in (action_request, dict_action1, dict_action2):

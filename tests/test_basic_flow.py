@@ -10,20 +10,7 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
 from cloudshell.shell.flows.connectivity.models.driver_response import (
     ConnectivityActionResult,
 )
-from cloudshell.shell.flows.connectivity.parse_request_service import (
-    ParseConnectivityRequestService,
-)
-
-
-def create_driver_str_request(*action_requests):
-    return json.dumps({"driverRequest": {"actions": list(action_requests)}})
-
-
-@pytest.fixture()
-def parse_connectivity_request_service():
-    return ParseConnectivityRequestService(
-        is_vlan_range_supported=True, is_multi_vlan_supported=True
-    )
+from tests.base import create_net_ad, create_request
 
 
 @pytest.fixture()
@@ -54,7 +41,7 @@ def test_connectivity_flow(connectivity_flow, driver_request):
         '"actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495", '
         '"type": "removeVlan", '
         '"updatedInterface": "mac address", '
-        '"infoMessage": "successful", '
+        '"infoMessage": "removeVlan 10-11 applied successfully", '
         '"errorMessage": "", '
         '"success": true'
         "}]}}"
@@ -74,7 +61,10 @@ def test_connectivity_flow_failed(connectivity_flow, driver_request):
                     "type": "removeVlan",
                     "updatedInterface": "centos",
                     "infoMessage": "",
-                    "errorMessage": "fail",
+                    "errorMessage": (
+                        "Failed to removeVlan 10-11 for centos on VM ID vm_uid for vNIC"
+                        " vnic. Error: fail"
+                    ),
                     "success": False,
                 }
             ]
@@ -170,7 +160,7 @@ def test_connectivity_flow_set_vlan(connectivity_flow, driver_request):
         '"actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495", '
         '"type": "setVlan", '
         '"updatedInterface": "mac address", '
-        '"infoMessage": "successful", '
+        '"infoMessage": "setVlan 10-11 applied successfully", '
         '"errorMessage": "", '
         '"success": true'
         "}]}}"
@@ -198,11 +188,9 @@ def test_abstract_methods_raises(parse_connectivity_request_service, action_mode
         inst._remove_vlan(action_model)
 
 
-def test_set_vlan_request_returns_one_response_action(
-    create_networking_action_request, connectivity_flow
-):
-    action = create_networking_action_request(set_vlan=True)
-    request = create_driver_str_request(action)
+def test_set_vlan_request_returns_one_response_action(connectivity_flow):
+    action = create_net_ad()
+    request = create_request(action)
 
     res = connectivity_flow.apply_connectivity(request)
 
@@ -211,11 +199,9 @@ def test_set_vlan_request_returns_one_response_action(
     assert len(action_results) == 1
 
 
-def test_do_not_run_set_vlan_if_remove_vlan_failed(
-    create_networking_action_request, connectivity_flow
-):
-    action = create_networking_action_request(set_vlan=True)
-    request = create_driver_str_request(action)
+def test_do_not_run_set_vlan_if_remove_vlan_failed(connectivity_flow):
+    action = create_net_ad()
+    request = create_request(action)
 
     connectivity_flow.IS_SUCCESS = False
     connectivity_flow._set_vlan = Mock()
@@ -228,9 +214,7 @@ def test_do_not_run_set_vlan_if_remove_vlan_failed(
     connectivity_flow._set_vlan.assert_not_called()
 
 
-def test_do_run_set_vlan_if_remove_vlan_success(
-    create_networking_action_request, parse_connectivity_request_service
-):
+def test_do_run_set_vlan_if_remove_vlan_success(parse_connectivity_request_service):
     def return_success_result(action):
         return ConnectivityActionResult.success_result(action, "successful")
 
@@ -238,8 +222,8 @@ def test_do_run_set_vlan_if_remove_vlan_success(
         _remove_vlan = Mock(side_effect=return_success_result)
         _set_vlan = Mock(side_effect=return_success_result)
 
-    action = create_networking_action_request(set_vlan=True)
-    request = create_driver_str_request(action)
+    action = create_net_ad()
+    request = create_request(action)
 
     flow = TestedConnectivityFlow(parse_connectivity_request_service)
     res = flow.apply_connectivity(request)
@@ -249,17 +233,15 @@ def test_do_run_set_vlan_if_remove_vlan_success(
     flow._set_vlan.assert_called_once()
 
 
-def test_failed_response_if_remove_vlan_failed(
-    create_networking_action_request, parse_connectivity_request_service
-):
+def test_failed_response_if_remove_vlan_failed(parse_connectivity_request_service):
     class TestedConnectivityFlow(AbstractConnectivityFlow):
         def _remove_vlan(self, a: ConnectivityActionModel):
             1 / 0
 
         _set_vlan = None
 
-    action = create_networking_action_request(set_vlan=False)
-    request = create_driver_str_request(action)
+    action = create_net_ad(set_vlan=False)
+    request = create_request(action)
 
     flow = TestedConnectivityFlow(parse_connectivity_request_service)
     res = flow.apply_connectivity(request)

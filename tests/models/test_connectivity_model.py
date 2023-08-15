@@ -1,6 +1,7 @@
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
 )
+from tests.base import create_cp_ad
 
 
 def test_connectivity_action_model(action_request):
@@ -67,13 +68,13 @@ def test_action_model_with_switch_name(action_request):
     assert action.connection_params.vlan_service_attrs.switch_name == "switch_name"
 
 
-def test_actions_equals(create_networking_action_request):
-    action1 = create_networking_action_request(True, vm_uuid="vm1", vnic="vnic1")
-    action2 = create_networking_action_request(True, vm_uuid="vm1", vnic="vnic1")
+def test_actions_equals():
+    action1 = create_cp_ad(vnic="vnic1", uniq_id=False)
+    action2 = create_cp_ad(vnic="vnic1", uniq_id=False)
     assert action1 == action2
 
 
-def test_actions_not_equals(create_networking_action_request):
-    action1 = create_networking_action_request(True, vm_uuid="vm1", vnic="vnic1")
-    action2 = create_networking_action_request(True, vm_uuid="vm1", vnic="vnic2")
+def test_actions_not_equals():
+    action1 = create_cp_ad(vnic="vnic1", uniq_id=False)
+    action2 = create_cp_ad(vnic="vnic2", uniq_id=False)
     assert action1 != action2
