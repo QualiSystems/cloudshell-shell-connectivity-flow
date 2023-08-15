@@ -6,6 +6,7 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
     get_vnic,
 )
+from tests.base import create_cp_ad
 
 
 @pytest.mark.parametrize(
@@ -92,15 +93,12 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ),
 )
 def test_grouping_actions(
-    create_networking_action_request,
     existed_vnics_info,
     actions_vnics,
     expected_groups_indexes,
 ):
     requested_actions = [
-        ConnectivityActionModel.parse_obj(
-            create_networking_action_request(True, vm_uuid="VM_UUID", vnic=vnic_name)
-        )
+        ConnectivityActionModel.parse_obj(create_cp_ad(vnic=vnic_name))
         for vnic_name in actions_vnics
     ]
 
