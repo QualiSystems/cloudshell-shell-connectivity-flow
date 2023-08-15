@@ -5,8 +5,6 @@ from abc import abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Collection
 from concurrent.futures import ThreadPoolExecutor
-from copy import deepcopy
-from itertools import chain
 from threading import Lock
 from typing import Any
 
@@ -16,8 +14,9 @@ from cloudshell.logging.context_filters import pass_log_context  # type: ignore
 
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectivityActionModel,
-    ConnectivityTypeEnum,
+    get_vm_uuid,
     get_vm_uuid_or_target,
+    get_vnic,
 )
 from cloudshell.shell.flows.connectivity.models.driver_response import (
     ConnectivityActionResult,
@@ -45,12 +44,15 @@ class AbcConnectivityFlow:
         self.validate_actions(actions)
 
         with ThreadPoolExecutor(initializer=pass_log_context()) as executor:
+            self.pre_connectivity(actions, executor)
+            self._clear_targets(actions, executor)
             remove_actions = self._prepare_remove_actions(actions)
-            executor.map(self.remove_vlans, remove_actions)
+            tuple(executor.map(self.remove_vlans, remove_actions))
 
             set_actions = self._prepare_set_actions(actions)
-            executor.map(self.set_vlans, set_actions)
+            tuple(executor.map(self.set_vlans, set_actions))
             self._rollback_failed_set_actions(set_actions, executor)
+            self.post_connectivity(actions, executor)
 
         result = self._get_result()
         logger.debug(f"Connectivity result: {result}")
@@ -68,6 +70,12 @@ class AbcConnectivityFlow:
     def validate_actions(self, actions: Collection[ConnectivityActionModel]) -> None:
         pass
 
+    def pre_connectivity(
+        self, actions: Collection[ConnectivityActionModel], executor: ThreadPoolExecutor
+    ) -> None:
+        """Executes before set/remove VLAN actions."""
+        pass
+
     def set_vlans(self, actions: Collection[ConnectivityActionModel]) -> None:
         """Set VLANs for the sequence of actions."""
         self._execute_actions(self.set_vlan, actions)
@@ -77,25 +85,44 @@ class AbcConnectivityFlow:
         self._execute_actions(self.remove_vlan, actions)
 
     @abstractmethod
-    def set_vlan(
-        self, action: ConnectivityActionModel, target: Any
-    ) -> ConnectivityActionResult:
+    def clear(self, action: ConnectivityActionModel, target: Any) -> str:
+        """Executes before set VLAN actions or for rolling back failed.
+
+        Returns updated interface if it's different from target name.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_vlan(self, action: ConnectivityActionModel, target: Any) -> str:
+        """Execute set VLAN action for the target.
+
+        Returns updated interface if it's different from target name.
+        """
         raise NotImplementedError()
 
     @abstractmethod
-    def remove_vlan(
-        self, action: ConnectivityActionModel, target: Any
-    ) -> ConnectivityActionResult:
+    def remove_vlan(self, action: ConnectivityActionModel, target: Any) -> str:
         """Remove VLAN for the target.
 
-        If VLAN is empty all VLANs should be cleared.
+        Returns updated interface if it's different from target name.
         """
         raise NotImplementedError()
+
+    def post_connectivity(
+        self, actions: Collection[ConnectivityActionModel], executor: ThreadPoolExecutor
+    ) -> None:
+        """Executes after set/remove VLAN actions."""
+        pass
 
     def load_target(self, target_name: str) -> Any:
         return None
 
-    def get_target(self, target_name: str) -> Any:
+    def get_target(self, target_name_or_action: str | ConnectivityActionModel) -> Any:
+        if isinstance(target_name_or_action, ConnectivityActionModel):
+            target_name = get_vm_uuid_or_target(target_name_or_action)
+        else:
+            target_name = target_name_or_action
+
         with self._get_target_lock:
             try:
                 target = self._targets_map[target_name]
@@ -106,9 +133,10 @@ class AbcConnectivityFlow:
 
     def _execute_actions(
         self,
-        fn: Callable[[ConnectivityActionModel, Any], ConnectivityActionResult],
+        fn: Callable[[ConnectivityActionModel, Any], str],
         actions: Collection[ConnectivityActionModel],
     ) -> None:
+        """Execute actions sequentially and save results."""
         action_targets = {action.action_target.name for action in actions}
         action_vm_uuids = {action.custom_action_attrs.vm_uuid for action in actions}
         assert len(action_targets) == 1 and len(action_vm_uuids) in (1, 0)
@@ -119,47 +147,35 @@ class AbcConnectivityFlow:
                 logger.debug(f"Skip action {action} due to previous failure")
                 result = ConnectivityActionResult.skip_result(action)
             else:
-                target = self.get_target(get_vm_uuid_or_target(action))
+                target = self.get_target(action)
                 try:
-                    result = fn(action, target)
+                    iface = fn(action, target)
                 except Exception as e:
                     emsg = _get_response_emsg(action, e)
                     logger.exception(emsg)
                     result = ConnectivityActionResult.fail_result(action, emsg)
                     failed_action = action
+                else:
+                    result = ConnectivityActionResult.success_result(
+                        action, iface=iface
+                    )
 
             self.results[result.actionId].append(result)
 
+    @abstractmethod
     def _rollback_failed_set_actions(
         self,
         set_actions: Collection[Collection[ConnectivityActionModel]],
         executor: ThreadPoolExecutor,
     ) -> None:
-        """Rollback all sub actions if one of them failed."""
-        # get failed action ids
-        failed_action_ids = set()
-        for action_id, results in self.results.items():
-            for result in results:
-                if not result.success and result.type == "setVlan":
-                    failed_action_ids.add(action_id)
-                    break
+        raise NotImplementedError
 
-        # create remove actions with VLAN = None
-        new_remove_actions = []
-        for action in chain.from_iterable(set_actions):  # type: ConnectivityActionModel
-            if action.action_id in failed_action_ids:
-                new_action: ConnectivityActionModel = deepcopy(action)
-                new_action.connection_params.vlan_id = ""
-                new_action.connection_params.vlan_service_attrs.vlan_id = ""
-                new_action.type = ConnectivityTypeEnum.REMOVE_VLAN
-
-                if new_action not in new_remove_actions:
-                    # add action as sequence of one action
-                    # they will be executed in parallel
-                    new_remove_actions.append((action,))
-
-        # execute remove actions
-        executor.map(self.remove_vlans, new_remove_actions)
+    @abstractmethod
+    def _clear_targets(
+        self, actions: Collection[ConnectivityActionModel], executor: ThreadPoolExecutor
+    ) -> None:
+        """Remove all VLANs for the targets."""
+        raise NotImplementedError
 
     @abstractmethod
     def _prepare_remove_actions(
@@ -171,7 +187,7 @@ class AbcConnectivityFlow:
         Groups of actions will be executed in parallel.
         Actions in group will be executed in sequence.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def _prepare_set_actions(
@@ -183,24 +199,14 @@ class AbcConnectivityFlow:
         Groups of actions will be executed in parallel.
         Actions in group will be executed in sequence.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _get_result(self) -> str:
         single_results: dict[str, ConnectivityActionResult] = {}
         for action_id, results in self.results.items():
             for result in results:
                 if existed_result := single_results.get(action_id):
-                    existed_result.success = existed_result.success and result.success
-                    existed_result.infoMessage = (
-                        f"{existed_result.infoMessage}\n{result.infoMessage}"
-                    )
-                    existed_result.errorMessage = (
-                        f"{existed_result.errorMessage}\n{result.errorMessage}"
-                    )
-                    ifaces = set(existed_result.updatedInterface.split(";"))
-                    if result.updatedInterface not in ifaces:
-                        ifaces.add(result.updatedInterface)
-                    existed_result.updatedInterface = ";".join(ifaces)
+                    _merge_results(existed_result, result)
                 else:
                     single_results[action_id] = result
 
@@ -209,13 +215,37 @@ class AbcConnectivityFlow:
         )
 
 
+def _merge_results(ex: ConnectivityActionResult, new: ConnectivityActionResult) -> None:
+    ex.success = ex.success and new.success
+    if ex.success:
+        ex.infoMessage = _merge_result_messages(ex.infoMessage, new.infoMessage)
+    else:
+        ex.infoMessage = ""  # clear info message if any of actions failed
+
+    ex.errorMessage = _merge_result_messages(ex.errorMessage, new.errorMessage)
+    ex.updatedInterface = _merge_ifaces(ex.updatedInterface, new.updatedInterface)
+
+
+def _merge_result_messages(ex: str, new: str) -> str:
+    messages = set(ex.split("\n"))
+    messages.add(new)
+    return "\n".join(filter(bool, messages))
+
+
+def _merge_ifaces(ex: str, new: str) -> str:
+    ifaces = set(ex.split(";"))
+    ifaces.add(new)
+    return ";".join(filter(bool, ifaces))
+
+
 def _get_response_emsg(action: ConnectivityActionModel, e: Exception) -> str:
     vlan = action.connection_params.vlan_id
     target_name = action.action_target.name
-    emsg = f"Failed to apply VLAN changes ({vlan}) for target {target_name}"
-    if action.custom_action_attrs.vm_uuid:
-        emsg += f" on VM ID {action.custom_action_attrs.vm_uuid}"
-        if action.custom_action_attrs.vnic:
-            emsg += f" for vNIC {action.custom_action_attrs.vnic}"
+    type_ = action.type.value
+    emsg = f"Failed to {type_} {vlan} for {target_name}"
+    if vm_uuid := get_vm_uuid(action):
+        emsg += f" on VM ID {vm_uuid}"
+        if vnic := get_vnic(action):
+            emsg += f" for vNIC {vnic}"
     emsg = f"{emsg}. Error: {e}"
     return emsg
