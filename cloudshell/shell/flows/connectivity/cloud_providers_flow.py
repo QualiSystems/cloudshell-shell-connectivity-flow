@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Collection
-from itertools import groupby
+from concurrent.futures import ThreadPoolExecutor, wait
+from itertools import chain, groupby
 from typing import Any
 
 from attrs import define
@@ -19,6 +20,36 @@ from cloudshell.shell.flows.connectivity.models.connectivity_model import (
 
 
 class AbcCloudProviderConnectivityFlow(AbcConnectivityFlow):
+    def _clear_targets(
+        self, actions: Collection[ConnectivityActionModel], executor: ThreadPoolExecutor
+    ) -> None:
+        """Do not clear targets for Cloud Provider."""
+
+    def _rollback_failed_set_actions(
+        self,
+        set_actions: Collection[Collection[ConnectivityActionModel]],
+        executor: ThreadPoolExecutor,
+    ) -> None:
+        # get failed action ids
+        failed_action_ids = set()
+        for action_id, results in self.results.items():
+            if not all(result.success for result in results):
+                failed_action_ids.add(action_id)
+                continue
+
+        actions_to_rollback = []
+        for action in chain.from_iterable(set_actions):  # type: ConnectivityActionModel
+            if action.action_id in failed_action_ids:
+                # get all sub action for the failed action id
+                actions_to_rollback.append(action)
+
+        # execute clear actions, ignore results
+        futures = [
+            executor.submit(self.clear, a, self.get_target(a))
+            for a in actions_to_rollback
+        ]
+        wait(futures)
+
     @abstractmethod
     def get_vnics(self, vm: Any) -> Collection[VnicInfo]:
         raise NotImplementedError
