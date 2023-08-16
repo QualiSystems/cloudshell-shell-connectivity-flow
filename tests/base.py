@@ -53,7 +53,7 @@ def create_net_ad(
     action_id: str | None = None,
 ) -> ActionDict:
     """Create Action Dict for networking devices."""
-    return create_action_dict(
+    return _create_ad(
         set_vlan=set_vlan,
         vlan_id=vlan_id,
         mode=mode,
@@ -78,21 +78,21 @@ def create_cp_ad(
     action_id: str | None = None,
 ) -> ActionDict:
     """Create Action Dict for Cloud Providers."""
-    return create_action_dict(
+    return _create_ad(
         set_vlan=set_vlan,
         vlan_id=vlan_id,
         mode=mode,
         target=target,
-        vm_uuid=vm_uuid,
-        vnic=vnic,
         virtual_network=virtual_network,
         iface=iface,
+        vm_uuid=vm_uuid,
+        vnic=vnic,
         uniq_id=uniq_id,
         action_id=action_id,
     )
 
 
-def create_action_dict(
+def _create_ad(
     *,
     set_vlan: bool = True,
     vlan_id: str = DEFAULT_VLAN_ID,
