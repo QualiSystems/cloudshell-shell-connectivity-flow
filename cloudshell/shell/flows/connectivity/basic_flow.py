@@ -71,7 +71,7 @@ class AbstractConnectivityFlow(AbcDeviceConnectivityFlow, ABC):
         a.connection_params.vlan_id = ""
         a.connection_params.vlan_service_attrs.vlan_id = ""
         a.type = ConnectivityTypeEnum.REMOVE_VLAN
-        result = self._remove_vlan(action)
+        result = self._remove_vlan(a)
         if not result.success:
             raise ApplyConnectivityException(result.errorMessage)
         return result.updatedInterface
