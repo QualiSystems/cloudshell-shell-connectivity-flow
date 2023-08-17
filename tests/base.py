@@ -46,16 +46,17 @@ def create_net_ad(
     *,
     set_vlan: bool = True,
     vlan_id: str = DEFAULT_VLAN_ID,
+    vlan_service_attrs_vlan_id: str | None = None,
     mode: ConnectionModeEnum = ConnectionModeEnum.ACCESS,
     target: str = DEFAULT_TARGET,
     uniq_id: bool = True,
-    connection_params_type: str = "foo",
     action_id: str | None = None,
 ) -> ActionDict:
     """Create Action Dict for networking devices."""
     return _create_ad(
         set_vlan=set_vlan,
         vlan_id=vlan_id,
+        vlan_service_attrs_vlan_id=vlan_service_attrs_vlan_id,
         mode=mode,
         target=target,
         uniq_id=uniq_id,
@@ -67,23 +68,26 @@ def create_cp_ad(
     *,
     set_vlan: bool = True,
     vlan_id: str = DEFAULT_VLAN_ID,
+    vlan_service_attrs_vlan_id: str | None = None,
     mode: ConnectionModeEnum = ConnectionModeEnum.ACCESS,
     target: str = DEFAULT_VM_NAME,
     vm_uuid: str = DEFAULT_VM_UUID,
     vnic: str | None = None,
     virtual_network: str | None = None,
+    existing_network: str | None = None,
     iface: str | None = None,
     uniq_id: bool = True,
-    connection_params_type: str = "foo",
     action_id: str | None = None,
 ) -> ActionDict:
     """Create Action Dict for Cloud Providers."""
     return _create_ad(
         set_vlan=set_vlan,
         vlan_id=vlan_id,
+        vlan_service_attrs_vlan_id=vlan_service_attrs_vlan_id,
         mode=mode,
         target=target,
         virtual_network=virtual_network,
+        existing_network=existing_network,
         iface=iface,
         vm_uuid=vm_uuid,
         vnic=vnic,
@@ -96,14 +100,15 @@ def _create_ad(
     *,
     set_vlan: bool = True,
     vlan_id: str = DEFAULT_VLAN_ID,
+    vlan_service_attrs_vlan_id: str | None = None,
     mode: ConnectionModeEnum = ConnectionModeEnum.ACCESS,
     target: str = DEFAULT_TARGET,
     virtual_network: str | None = None,
+    existing_network: str | None = None,
     iface: str | None = None,
     vm_uuid: str | None = None,
     vnic: str | None = None,
     uniq_id: bool = True,
-    connection_params_type: str = "foo",
     action_id: str | None = None,
 ) -> ActionDict:
     assert not iface or not set_vlan, "iface can be specified only for removeVlan"
@@ -111,6 +116,8 @@ def _create_ad(
     # connection params
     # CloudShell sets VLAN ID to Virtual Network if it's empty
     virtual_network = virtual_network or vlan_id
+    if vlan_service_attrs_vlan_id is None:
+        vlan_service_attrs_vlan_id = vlan_id
     connection_params = ConnectionParamsDict(
         vlanId=vlan_id,
         mode=mode.value,
@@ -118,11 +125,12 @@ def _create_ad(
             {
                 "QnQ": "False",
                 "CTag": "",
-                VLAN_ID: vlan_id,
+                VLAN_ID: vlan_service_attrs_vlan_id,
                 VIRTUAL_NETWORK: virtual_network,
+                "Existing Network": existing_network,
             }
         ),
-        type=connection_params_type,
+        type="foo",
     )
 
     # connector attributes
