@@ -24,13 +24,13 @@ VIRTUAL_NETWORK = "Virtual Network"
 class VlanContainNotInt(VLANHandlerException):
     value: Any
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"VLAN {self.value} isn't a integer"
 
 
 @define
 class VirtualNetworkDeprecated(VLANHandlerException):
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             "'Virtual Network' attribute is deprecated, use 'Existing Network' instead"
         )
@@ -90,14 +90,14 @@ def iterate_dict_actions_by_vlan_range(
         try:
             int(vlan_str)
         except ValueError:
+            emsg = f"Access mode and QnQ can be only with int VLAN, not '{vlan_str}'"
             try:
                 get_vlan_list(vlan_str, False, False)
             except VlanContainNotInt:
                 raise VirtualNetworkDeprecated
             except Exception:
-                emsg = (
-                    f"Access mode and QnQ can be only with int VLAN, not '{vlan_str}'"
-                )
+                raise ValueError(emsg)
+            else:
                 raise ValueError(emsg)
     for vlan in get_vlan_list(
         vlan_str, is_vlan_range_supported, is_multi_vlan_supported

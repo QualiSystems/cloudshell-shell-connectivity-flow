@@ -1,6 +1,6 @@
 import warnings
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -50,7 +50,7 @@ class VlanServiceModel(BaseModel):
     switch_name: Optional[str] = Field(None, alias="Switch Name")
     existing_network: Optional[str] = Field(None, alias="Existing Network")
 
-    def __getattribute__(self, item):
+    def __getattribute__(self, item: str) -> Any:
         if "virtual_network" == item:
             msg = (
                 "'Virtual Network' attribute is deprecated, "
