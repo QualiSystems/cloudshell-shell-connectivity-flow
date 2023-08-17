@@ -49,7 +49,8 @@ def group_actions(
 
     for action in filterfalse(get_vnic, actions):
         if vnics_to_use:
-            vnic_index, _ = vnics_to_use.popitem()
+            vnic_index = next(iter(vnics_to_use))  # get first index
+            vnics_to_use.pop(vnic_index)
             action.custom_action_attrs.vnic = str(vnic_index)
             actions_to_replace_vnics.append(action)
         else:

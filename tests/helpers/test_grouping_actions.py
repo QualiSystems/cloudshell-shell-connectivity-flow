@@ -90,6 +90,22 @@ from tests.base import create_cp_ad
             ["4", ""],
             [[("3", 1), ("4", 0)]],
         ),
+        (
+            # VM has 2 vNICs with networks that can be replaced
+            # 1 action without vNIC specified
+            # should be connected to first vNIC
+            [VnicInfo("1", 1, True), VnicInfo("2", 2, True)],
+            [""],
+            [[("1", 0)]],
+        ),
+        (
+            # VM has 2 vNICs with networks that can be replaced
+            # 2 action, 1st without vNIC specified, 2nd with 3rd vNIC specified
+            # should be connected to 1st vNIC and 3rd vNIC
+            [VnicInfo("1", 1, True), VnicInfo("2", 2, True)],
+            ["", "3"],
+            [[("1", 0)], [("3", 1)]],
+        ),
     ),
 )
 def test_grouping_actions(
