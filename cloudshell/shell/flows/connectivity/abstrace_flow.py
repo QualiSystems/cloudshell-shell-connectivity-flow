@@ -44,15 +44,17 @@ class AbcConnectivityFlow:
         self.validate_actions(actions)
 
         with ThreadPoolExecutor(initializer=pass_log_context()) as executor:
-            self.pre_connectivity(actions, executor)
-            self._clear_targets(actions, executor)
-            remove_actions = self._prepare_remove_actions(actions)
-            tuple(executor.map(self.remove_vlans, remove_actions))
+            try:
+                self.pre_connectivity(actions, executor)
+                self._clear_targets(actions, executor)
+                remove_actions = self._prepare_remove_actions(actions)
+                tuple(executor.map(self.remove_vlans, remove_actions))
 
-            set_actions = self._prepare_set_actions(actions)
-            tuple(executor.map(self.set_vlans, set_actions))
-            self._rollback_failed_set_actions(set_actions, executor)
-            self.post_connectivity(actions, executor)
+                set_actions = self._prepare_set_actions(actions)
+                tuple(executor.map(self.set_vlans, set_actions))
+                self._rollback_failed_set_actions(set_actions, executor)
+            finally:
+                self.post_connectivity(actions, executor)
 
         result = self._get_result()
         logger.debug(f"Connectivity result: {result}")
