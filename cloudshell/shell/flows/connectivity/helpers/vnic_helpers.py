@@ -52,7 +52,7 @@ def iterate_dict_actions_by_interface(
     else:
         for iface in split_list_str(iface_str):
             new_dict_action = deepcopy(dict_action)
-            connector_attrs = get_connector_attrs(dict_action)
+            connector_attrs = get_connector_attrs(new_dict_action)
             set_val_to_list_attrs(connector_attrs, INTERFACE, iface)
             yield new_dict_action
 
