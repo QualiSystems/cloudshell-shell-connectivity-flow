@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Generator, Iterable
 from copy import deepcopy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from attrs import define
 
 from .dict_action_helpers import get_val_from_list_attrs, set_val_to_list_attrs
 from cloudshell.shell.flows.connectivity.exceptions import VLANHandlerException
@@ -18,11 +20,27 @@ VLAN_ID = "VLAN ID"
 VIRTUAL_NETWORK = "Virtual Network"
 
 
+@define
+class VlanContainNotInt(VLANHandlerException):
+    value: Any
+
+    def __str__(self):
+        return f"VLAN {self.value} isn't a integer"
+
+
+@define
+class VirtualNetworkDeprecated(VLANHandlerException):
+    def __str__(self):
+        return (
+            "'Virtual Network' attribute is deprecated, use 'Existing Network' instead"
+        )
+
+
 def _validate_vlan_number(str_number: str) -> None:
     try:
         number = int(str_number)
     except ValueError:
-        raise VLANHandlerException(f"VLAN {str_number} isn't a integer")
+        raise VlanContainNotInt(str_number)
     if not 1 <= number <= 4094:
         raise VLANHandlerException(f"Wrong VLAN detected {number}")
 
@@ -72,8 +90,15 @@ def iterate_dict_actions_by_vlan_range(
         try:
             int(vlan_str)
         except ValueError:
-            emsg = f"Access mode and QnQ can be only with int VLAN, not '{vlan_str}'"
-            raise ValueError(emsg)
+            try:
+                get_vlan_list(vlan_str, False, False)
+            except VlanContainNotInt:
+                raise VirtualNetworkDeprecated
+            except Exception:
+                emsg = (
+                    f"Access mode and QnQ can be only with int VLAN, not '{vlan_str}'"
+                )
+                raise ValueError(emsg)
     for vlan in get_vlan_list(
         vlan_str, is_vlan_range_supported, is_multi_vlan_supported
     ):

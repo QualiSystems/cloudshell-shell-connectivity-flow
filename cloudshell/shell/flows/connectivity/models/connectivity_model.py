@@ -1,3 +1,4 @@
+import warnings
 from enum import Enum
 from typing import Optional
 
@@ -47,6 +48,16 @@ class VlanServiceModel(BaseModel):
     forged_transmits: Optional[bool] = Field(None, alias="Forged Transmits")
     mac_changes: Optional[bool] = Field(None, alias="MAC Address Changes")
     switch_name: Optional[str] = Field(None, alias="Switch Name")
+    existing_network: Optional[str] = Field(None, alias="Existing Network")
+
+    def __getattribute__(self, item):
+        if "virtual_network" == item:
+            msg = (
+                "'Virtual Network' attribute is deprecated, "
+                "use 'Existing Network' instead"
+            )
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        return super().__getattribute__(item)
 
 
 class ConnectionParamsModel(BaseModel):
