@@ -15,6 +15,11 @@ class ConnectionModeEnum(Enum):
     TRUNK = "Trunk"
 
 
+class IsolationLevelEnum(Enum):
+    EXCLUSIVE = "Exclusive"
+    SHARED = "Shared"
+
+
 def list_attrs_to_dict(list_attrs: list[dict[str, str]]) -> dict[str, str]:
     return {attr["attributeName"]: attr["attributeValue"] for attr in list_attrs}
 
@@ -43,6 +48,7 @@ class VlanServiceModel(BaseModel):
     qnq: bool = Field(..., alias="QnQ")
     ctag: str = Field(..., alias="CTag")
     vlan_id: str = Field(..., alias="VLAN ID")
+    isolation_level: IsolationLevelEnum = Field(None, alias="Isolation Level")
     virtual_network: Optional[str] = Field("", alias="Virtual Network")
     promiscuous_mode: Optional[bool] = Field(None, alias="Promiscuous Mode")
     forged_transmits: Optional[bool] = Field(None, alias="Forged Transmits")
