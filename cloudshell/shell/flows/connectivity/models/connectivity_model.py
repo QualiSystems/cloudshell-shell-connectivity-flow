@@ -75,7 +75,7 @@ class ConnectionParamsModel(BaseModel):
 
     # validators
     _list_attrs_to_dict = validator("vlan_service_attrs", allow_reuse=True, pre=True)(
-        list_attrs_to_dict
+        list_attrs_to_dict  # type: ignore
     )
 
 
@@ -109,6 +109,6 @@ class ConnectivityActionModel(BaseModel):
     type: ConnectivityTypeEnum  # noqa: A003
 
     # validators
-    _list_attrs_to_dict = validator(
+    _list_attrs_to_dict = validator(  # type: ignore
         "connector_attrs", "custom_action_attrs", allow_reuse=True, pre=True
     )(list_attrs_to_dict)
