@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel
-from typing_extensions import Self
 
 from .connectivity_model import ConnectivityActionModel
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class ConnectivityActionResult(BaseModel):

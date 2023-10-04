@@ -36,16 +36,21 @@ def connectivity_flow(parse_connectivity_request_service):
 
 def test_connectivity_flow(connectivity_flow, driver_request):
     res = connectivity_flow.apply_connectivity(json.dumps(driver_request))
-    assert res == (
-        '{"driverResponse": {"actionResults": [{'
-        '"actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495", '
-        '"type": "removeVlan", '
-        '"updatedInterface": "mac address", '
-        '"infoMessage": "removeVlan 10-11 applied successfully", '
-        '"errorMessage": "", '
-        '"success": true'
-        "}]}}"
-    )
+    aid = "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495"
+    assert json.loads(res) == {
+        "driverResponse": {
+            "actionResults": [
+                {
+                    "actionId": aid,
+                    "type": "removeVlan",
+                    "updatedInterface": "mac address",
+                    "infoMessage": "removeVlan 10-11 applied successfully",
+                    "errorMessage": "",
+                    "success": True,
+                }
+            ]
+        }
+    }
 
 
 def test_connectivity_flow_failed(connectivity_flow, driver_request):
@@ -155,16 +160,21 @@ def test_request_without_vlan_service(connectivity_flow):
 def test_connectivity_flow_set_vlan(connectivity_flow, driver_request):
     driver_request["driverRequest"]["actions"][0]["type"] = "setVlan"
     res = connectivity_flow.apply_connectivity(json.dumps(driver_request))
-    assert res == (
-        '{"driverResponse": {"actionResults": [{'
-        '"actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495", '
-        '"type": "setVlan", '
-        '"updatedInterface": "mac address", '
-        '"infoMessage": "setVlan 10-11 applied successfully", '
-        '"errorMessage": "", '
-        '"success": true'
-        "}]}}"
-    )
+    aid = "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495"
+    assert json.loads(res) == {
+        "driverResponse": {
+            "actionResults": [
+                {
+                    "actionId": aid,
+                    "type": "setVlan",
+                    "updatedInterface": "mac address",
+                    "infoMessage": "setVlan 10-11 applied successfully",
+                    "errorMessage": "",
+                    "success": True,
+                }
+            ]
+        }
+    }
 
 
 def test_connectivity_flow_abstract_methods(parse_connectivity_request_service):

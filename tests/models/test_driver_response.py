@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from cloudshell.shell.flows.connectivity.models.driver_response import (
@@ -28,13 +30,18 @@ def test_prepare_response(action_model):
     result = ConnectivityActionResult.success_result(action_model, "success msg")
     response = DriverResponseRoot.prepare_response([result])
     assert response.driverResponse.actionResults[0] == result
-    assert response.json() == (
-        '{"driverResponse": {"actionResults": ['
-        '{"actionId": "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495", '
-        '"type": "removeVlan", '
-        '"updatedInterface": "centos", '
-        '"infoMessage": "success msg", '
-        '"errorMessage": "", '
-        '"success": true'
-        "}]}}"
-    )
+    aid = "96582265-2728-43aa-bc97-cefb2457ca44_0900c4b5-0f90-42e3-b495"
+    assert json.loads(response.json()) == {
+        "driverResponse": {
+            "actionResults": [
+                {
+                    "actionId": aid,
+                    "type": "removeVlan",
+                    "updatedInterface": "centos",
+                    "infoMessage": "success msg",
+                    "errorMessage": "",
+                    "success": True,
+                }
+            ]
+        }
+    }
